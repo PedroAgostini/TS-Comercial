@@ -271,6 +271,23 @@ export function AppProvider({ children }) {
   // ── Active Module ─────────────────────────────────────────────
   const [activeModule, setActiveModule] = useState('intelligence')
 
+  // ── Admin Auth ────────────────────────────────────────────────
+  const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem('ts_admin') === '1')
+
+  const adminLogin = useCallback((user, pass) => {
+    if (user === 'tsagency' && pass === 'T$Sp1N$3lL1n6') {
+      sessionStorage.setItem('ts_admin', '1')
+      setIsAdmin(true)
+      return true
+    }
+    return false
+  }, [])
+
+  const adminLogout = useCallback(() => {
+    sessionStorage.removeItem('ts_admin')
+    setIsAdmin(false)
+  }, [])
+
   const value = {
     apiKey, setApiKey,
     aiModel, setAiModel,
@@ -294,6 +311,7 @@ export function AppProvider({ children }) {
     loadingProposal, setLoadingProposal,
     resetIntelligence,
     activeModule, setActiveModule,
+    isAdmin, adminLogin, adminLogout,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

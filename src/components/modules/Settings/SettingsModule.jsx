@@ -185,6 +185,7 @@ export default function SettingsModule() {
     apiKey, setApiKey, aiModel, setAiModel,
     supabaseUrl, supabaseKey, applyDbCredentials, dbConnected, setDbConnected,
     dbColumnsOk, setDbColumnsOk,
+    isAdmin,
   } = useApp()
 
   const [tab, setTab] = useState('ai')
@@ -235,11 +236,15 @@ export default function SettingsModule() {
     setTimeout(() => setSaved(false), 2500)
   }
 
-  const TABS = [
-    { id: 'ai',      label: 'IA & Modelos',    icon: Bot },
-    { id: 'db',      label: 'Banco de Dados',   icon: Database },
-    { id: 'prompts', label: 'Prompts da IA',    icon: Code2 },
-  ]
+  const TABS = isAdmin
+    ? [
+        { id: 'ai',      label: 'IA & Modelos',  icon: Bot },
+        { id: 'db',      label: 'Banco de Dados', icon: Database },
+        { id: 'prompts', label: 'Prompts da IA',  icon: Code2 },
+      ]
+    : [
+        { id: 'ai', label: 'IA & Modelos', icon: Bot },
+      ]
 
   return (
     <div className="px-4 py-4 sm:p-6 max-w-3xl mx-auto space-y-5 animate-fade-in">

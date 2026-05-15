@@ -1,11 +1,23 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Settings, Brain, HandshakeIcon, Target, Zap,
   ChevronRight, Database, Cloud, Building2, ClipboardList, X,
+  Shield, LogOut, Lock,
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import AdminLoginModal from '../AdminLoginModal'
 
-const nav = [
+const NAV_PUBLIC = [
+  { id: 'intelligence', label: 'Inteligência de Vendas', icon: Brain,         desc: 'Persona + SPIN' },
+  { id: 'closing',      label: 'Fechamento & Proposta',  icon: HandshakeIcon, desc: 'Plano de ação' },
+  { id: 'briefing',     label: 'Briefing de Clientes',   icon: ClipboardList, desc: 'Onboarding do cliente' },
+  { id: 'historico',    label: 'Histórico de Leads',     icon: Database,      desc: 'Leads salvos' },
+  { id: 'sdr',          label: 'Ferramentas SDR',         icon: Zap,           desc: 'Prospecção' },
+  { id: 'closer',       label: 'Ferramentas Closer',      icon: Target,        desc: 'Fechamento' },
+  { id: 'settings',     label: 'Configurações',           icon: Settings,      desc: 'IA + Banco de Dados', muted: true },
+]
+
+const NAV_ADMIN = [
   { id: 'intelligence', label: 'Inteligência de Vendas', icon: Brain,         desc: 'Persona + SPIN' },
   { id: 'closing',      label: 'Fechamento & Proposta',  icon: HandshakeIcon, desc: 'Plano de ação' },
   { id: 'briefing',     label: 'Briefing de Clientes',   icon: ClipboardList, desc: 'Onboarding do cliente' },
@@ -38,7 +50,10 @@ function DbBadge() {
 }
 
 export default function Sidebar({ open, onClose }) {
-  const { activeModule, setActiveModule } = useApp()
+  const { activeModule, setActiveModule, isAdmin, adminLogout } = useApp()
+  const [showLogin, setShowLogin] = useState(false)
+
+  const nav = isAdmin ? NAV_ADMIN : NAV_PUBLIC
 
   const handleNav = (id) => {
     setActiveModule(id)
@@ -137,7 +152,33 @@ export default function Sidebar({ open, onClose }) {
         <DbBadge />
         <p className="text-xs text-slate-500 mt-2">Developed by <span className="text-[#FFA300] font-semibold">Pedro Agostini</span></p>
         <p className="text-xs text-slate-700 font-medium mt-1">EuSouTS © {new Date().getFullYear()}</p>
+
+        <div className="mt-3 pt-3 border-t border-white/5">
+          {isAdmin ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Shield className="w-3 h-3 text-[#FFA300]" />
+                <span className="text-xs text-[#FFA300] font-medium">Admin</span>
+              </div>
+              <button
+                onClick={adminLogout}
+                className="flex items-center gap-1 text-xs text-slate-600 hover:text-slate-300 transition-colors"
+              >
+                <LogOut className="w-3 h-3" /> Sair
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowLogin(true)}
+              className="flex items-center gap-1.5 text-xs text-slate-700 hover:text-slate-400 transition-colors"
+            >
+              <Lock className="w-3 h-3" /> Admin
+            </button>
+          )}
+        </div>
       </div>
+
+      {showLogin && <AdminLoginModal onClose={() => setShowLogin(false)} />}
     </aside>
   )
 }
