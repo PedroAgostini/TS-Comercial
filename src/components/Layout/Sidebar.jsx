@@ -170,9 +170,9 @@ export default function Sidebar({ open, onClose }) {
           ) : (
             <button
               onClick={() => setShowLogin(true)}
-              className="flex items-center gap-1.5 text-xs text-slate-700 hover:text-slate-400 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#FFA300] transition-colors px-2 py-1.5 rounded-lg hover:bg-[#FFA300]/5 w-full"
             >
-              <Lock className="w-3 h-3" /> Admin
+              <Lock className="w-3 h-3" /> Acesso Admin
             </button>
           )}
         </div>
