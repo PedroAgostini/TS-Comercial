@@ -373,26 +373,14 @@ export default function SettingsModule() {
           Conecte ao Supabase para salvar e carregar personas e perguntas SPIN de cada lead.
         </p>
 
-        {/* Pré-configurado via env vars */}
-        {import.meta.env.VITE_SUPABASE_URL ? (
-          <div className="glass-card p-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-[#FFA300] flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-slate-200 mb-1">Banco de dados pré-configurado</p>
-                <p className="text-xs text-slate-500">A conexão foi configurada pelo administrador. Todos os usuários compartilham o mesmo banco automaticamente.</p>
-              </div>
-            </div>
-          </div>
-
-        ) : dbConnected && !editingDb ? (
+        {dbConnected && !editingDb ? (
           /* Conectado — vista resumida */
           <div className="glass-card p-4 space-y-3">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-[#FFA300] flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-200">Supabase conectado</p>
-                <p className="text-xs text-slate-500 truncate">{supabaseUrl}</p>
+                <p className="text-sm font-semibold text-slate-200">Banco de dados conectado</p>
+                <p className="text-xs text-slate-500">Compartilhado entre todos os usuários.</p>
               </div>
             </div>
             {dbColumnsOk === false && (

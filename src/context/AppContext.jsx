@@ -96,10 +96,10 @@ export function AppProvider({ children }) {
   }, [])
 
   // ── Supabase / DB ─────────────────────────────────────────────
-  const ENV_URL = import.meta.env.VITE_SUPABASE_URL || ''
-  const ENV_KEY = import.meta.env.VITE_SUPABASE_KEY || ''
-  const [supabaseUrl, setSupabaseUrl] = useState(() => ENV_URL || localStorage.getItem('ts_sb_url') || '')
-  const [supabaseKey, setSupabaseKey] = useState(() => ENV_KEY || localStorage.getItem('ts_sb_key') || '')
+  const DEFAULT_DB_URL = 'https://atohlctkuofpodpyxgbi.supabase.co'
+  const DEFAULT_DB_KEY = 'sb_publishable_IbCNAmrm5mPsv1QDeLjPYQ_gxBWRoWN'
+  const [supabaseUrl, setSupabaseUrl] = useState(() => DEFAULT_DB_URL)
+  const [supabaseKey, setSupabaseKey] = useState(() => DEFAULT_DB_KEY)
   const [dbConnected, setDbConnected] = useState(false)
   const [dbColumnsOk, setDbColumnsOk] = useState(null)
   const [saveStatus, setSaveStatus] = useState('idle')
@@ -116,8 +116,6 @@ export function AppProvider({ children }) {
   }, [])
 
   const applyDbCredentials = useCallback((url, key) => {
-    localStorage.setItem('ts_sb_url', url)
-    localStorage.setItem('ts_sb_key', key)
     setSupabaseUrl(url)
     setSupabaseKey(key)
     const client = initSupabase(url, key)
