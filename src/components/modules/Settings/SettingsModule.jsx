@@ -19,6 +19,17 @@ import {
   UserPlus,
   Trash2,
   UserCheck,
+  LayoutList,
+  ChevronUp,
+  ChevronDown,
+  Brain,
+  HandshakeIcon,
+  ClipboardList,
+  Zap,
+  Target,
+  Settings as SettingsIcon,
+  Building2,
+  GripVertical,
 } from 'lucide-react'
 import { useApp, DEFAULT_PROMPTS } from '../../../context/AppContext'
 import { testConnection, checkColumns } from '../../../services/dbService'
@@ -269,6 +280,124 @@ function TeamTab() {
   )
 }
 
+// ─── Menu Tab ─────────────────────────────────────────────────────────────────
+
+const NAV_META = {
+  intelligence: { label: 'Inteligência de Vendas', icon: Brain,         desc: 'Persona + SPIN' },
+  closing:      { label: 'Fechamento & Proposta',  icon: HandshakeIcon, desc: 'Plano de ação' },
+  briefing:     { label: 'Briefing de Clientes',   icon: ClipboardList, desc: 'Onboarding do cliente' },
+  historico:    { label: 'Histórico de Leads',     icon: Database,      desc: 'Leads salvos' },
+  sdr:          { label: 'Ferramentas SDR',         icon: Zap,           desc: 'Prospecção' },
+  closer:       { label: 'Ferramentas Closer',      icon: Target,        desc: 'Fechamento' },
+  settings:     { label: 'Configurações',           icon: SettingsIcon,  desc: 'IA + Banco de Dados' },
+}
+
+function MenuTab() {
+  const { navConfig, toggleNavItem, moveNavItem } = useApp()
+  const visibleCount = navConfig.filter(i => i.visible).length
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-slate-500 leading-relaxed">
+        Controle quais abas os usuários gerais podem ver e defina a ordem de exibição no menu. A aba "Nossa Empresa" é exclusiva do admin e não aparece aqui.
+      </p>
+
+      <div className="glass-card overflow-hidden">
+        <div className="px-5 py-3.5 bg-[#FFA300]/5 border-b border-[#FFA300]/15 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <LayoutList className="w-4 h-4 text-[#FFA300]" />
+            <p className="text-sm font-semibold text-slate-100">Menu dos Usuários</p>
+          </div>
+          <span className="text-xs text-slate-500">{visibleCount} de {navConfig.length} visíveis</span>
+        </div>
+
+        <div className="divide-y divide-surface-border/50">
+          {navConfig.map((item, idx) => {
+            const meta = NAV_META[item.id]
+            if (!meta) return null
+            const Icon = meta.icon
+            return (
+              <div
+                key={item.id}
+                className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                  item.visible ? 'bg-surface/30' : 'bg-surface/10 opacity-60'
+                }`}
+              >
+                {/* Drag handle / order indicator */}
+                <GripVertical className="w-4 h-4 text-slate-700 flex-shrink-0 cursor-grab" />
+
+                {/* Icon */}
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border ${
+                  item.visible
+                    ? 'bg-[#FFA300]/10 border-[#FFA300]/20'
+                    : 'bg-surface border-surface-border'
+                }`}>
+                  <Icon className={`w-3.5 h-3.5 ${item.visible ? 'text-[#FFA300]' : 'text-slate-600'}`} />
+                </div>
+
+                {/* Labels */}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium truncate ${item.visible ? 'text-slate-200' : 'text-slate-500'}`}>
+                    {meta.label}
+                  </p>
+                  <p className="text-xs text-slate-600 truncate">{meta.desc}</p>
+                </div>
+
+                {/* Reorder buttons */}
+                <div className="flex flex-col gap-0.5 flex-shrink-0">
+                  <button
+                    onClick={() => moveNavItem(item.id, 'up')}
+                    disabled={idx === 0}
+                    className="p-1 rounded text-slate-600 hover:text-slate-300 hover:bg-white/8 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                    title="Mover para cima"
+                  >
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => moveNavItem(item.id, 'down')}
+                    disabled={idx === navConfig.length - 1}
+                    className="p-1 rounded text-slate-600 hover:text-slate-300 hover:bg-white/8 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                    title="Mover para baixo"
+                  >
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Visibility toggle */}
+                <button
+                  onClick={() => toggleNavItem(item.id)}
+                  className={`relative w-10 h-5.5 rounded-full flex-shrink-0 transition-all duration-200 ${
+                    item.visible
+                      ? 'bg-[#FFA300]'
+                      : 'bg-surface-border'
+                  }`}
+                  style={{ minWidth: '40px', height: '22px' }}
+                  title={item.visible ? 'Ocultar para usuários' : 'Mostrar para usuários'}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow-sm transition-all duration-200`}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      top: '2px',
+                      left: item.visible ? 'calc(100% - 20px)' : '2px',
+                    }}
+                  />
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="px-3 py-2.5 rounded-lg bg-[#FFA300]/5 border border-[#FFA300]/15 text-xs text-[#FFA300] flex items-start gap-2">
+        <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+        <span>As alterações entram em vigor imediatamente para novos acessos. Usuários já conectados verão as mudanças ao recarregar a página.</span>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function SettingsModule() {
@@ -333,6 +462,7 @@ export default function SettingsModule() {
         { id: 'db',      label: 'Banco de Dados', icon: Database },
         { id: 'prompts', label: 'Prompts da IA',  icon: Code2 },
         { id: 'team',    label: 'Equipe',          icon: Users },
+        { id: 'menu',    label: 'Menu',            icon: LayoutList },
       ]
     : [
         { id: 'ai', label: 'IA & Modelos', icon: Bot },
@@ -367,6 +497,9 @@ export default function SettingsModule() {
 
       {/* Team tab */}
       {tab === 'team' && <TeamTab />}
+
+      {/* Menu tab */}
+      {tab === 'menu' && <MenuTab />}
 
       {/* AI Config */}
       {tab === 'ai' && <section>

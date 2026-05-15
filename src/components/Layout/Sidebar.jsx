@@ -8,26 +8,19 @@ import {
 import { useApp } from '../../context/AppContext'
 import AdminLoginModal from '../AdminLoginModal'
 
-const NAV_PUBLIC = [
-  { id: 'intelligence', label: 'Inteligência de Vendas', icon: Brain,         desc: 'Persona + SPIN' },
-  { id: 'closing',      label: 'Fechamento & Proposta',  icon: HandshakeIcon, desc: 'Plano de ação' },
-  { id: 'briefing',     label: 'Briefing de Clientes',   icon: ClipboardList, desc: 'Onboarding do cliente' },
-  { id: 'historico',    label: 'Histórico de Leads',     icon: Database,      desc: 'Leads salvos' },
-  { id: 'sdr',          label: 'Ferramentas SDR',         icon: Zap,           desc: 'Prospecção' },
-  { id: 'closer',       label: 'Ferramentas Closer',      icon: Target,        desc: 'Fechamento' },
-  { id: 'settings',     label: 'Configurações',           icon: Settings,      desc: 'IA + Banco de Dados', muted: true },
-]
+// Full catalog of all possible nav items (source of truth for labels/icons)
+const NAV_CATALOG = {
+  intelligence: { label: 'Inteligência de Vendas', icon: Brain,         desc: 'Persona + SPIN' },
+  closing:      { label: 'Fechamento & Proposta',  icon: HandshakeIcon, desc: 'Plano de ação' },
+  briefing:     { label: 'Briefing de Clientes',   icon: ClipboardList, desc: 'Onboarding do cliente' },
+  historico:    { label: 'Histórico de Leads',     icon: Database,      desc: 'Leads salvos' },
+  sdr:          { label: 'Ferramentas SDR',         icon: Zap,           desc: 'Prospecção' },
+  closer:       { label: 'Ferramentas Closer',      icon: Target,        desc: 'Fechamento' },
+  empresa:      { label: 'Nossa Empresa',           icon: Building2,     desc: 'Contexto para IA' },
+  settings:     { label: 'Configurações',           icon: Settings,      desc: 'IA + Banco de Dados', muted: true },
+}
 
-const NAV_ADMIN = [
-  { id: 'intelligence', label: 'Inteligência de Vendas', icon: Brain,         desc: 'Persona + SPIN' },
-  { id: 'closing',      label: 'Fechamento & Proposta',  icon: HandshakeIcon, desc: 'Plano de ação' },
-  { id: 'briefing',     label: 'Briefing de Clientes',   icon: ClipboardList, desc: 'Onboarding do cliente' },
-  { id: 'historico',    label: 'Histórico de Leads',     icon: Database,      desc: 'Leads salvos' },
-  { id: 'sdr',          label: 'Ferramentas SDR',         icon: Zap,           desc: 'Prospecção' },
-  { id: 'closer',       label: 'Ferramentas Closer',      icon: Target,        desc: 'Fechamento' },
-  { id: 'empresa',      label: 'Nossa Empresa',           icon: Building2,     desc: 'Contexto para IA' },
-  { id: 'settings',     label: 'Configurações',           icon: Settings,      desc: 'IA + Banco de Dados', muted: true },
-]
+const NAV_ADMIN_ORDER = ['intelligence','closing','briefing','historico','sdr','closer','empresa','settings']
 
 function DbBadge() {
   const { dbConnected, saveStatus } = useApp()
@@ -51,10 +44,15 @@ function DbBadge() {
 }
 
 export default function Sidebar({ open, onClose }) {
-  const { activeModule, setActiveModule, isAdmin, adminLogout } = useApp()
+  const { activeModule, setActiveModule, isAdmin, adminLogout, navConfig } = useApp()
   const [showLogin, setShowLogin] = useState(false)
 
-  const nav = isAdmin ? NAV_ADMIN : NAV_PUBLIC
+  const nav = isAdmin
+    ? NAV_ADMIN_ORDER.map(id => ({ id, ...NAV_CATALOG[id] }))
+    : navConfig
+        .filter(item => item.visible)
+        .map(item => ({ id: item.id, ...NAV_CATALOG[item.id] }))
+        .filter(item => item.label) // skip unknown ids
 
   const handleNav = (id) => {
     setActiveModule(id)

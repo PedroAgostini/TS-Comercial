@@ -141,6 +141,49 @@ export function AppProvider({ children }) {
     setCompanyContext(prev => ({ ...prev, [field]: value }))
   }, [])
 
+  // ── Nav Config (admin controls public menu) ───────────────────
+  const DEFAULT_NAV_CONFIG = [
+    { id: 'intelligence', visible: true },
+    { id: 'closing',      visible: true },
+    { id: 'briefing',     visible: true },
+    { id: 'historico',    visible: true },
+    { id: 'sdr',          visible: true },
+    { id: 'closer',       visible: true },
+    { id: 'settings',     visible: true },
+  ]
+
+  const [navConfig, setNavConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ts_nav_config')
+      if (!saved) return DEFAULT_NAV_CONFIG
+      const parsed = JSON.parse(saved)
+      // Merge: keep saved order/visibility, add any new items at end
+      const ids = parsed.map(i => i.id)
+      const missing = DEFAULT_NAV_CONFIG.filter(d => !ids.includes(d.id))
+      return [...parsed, ...missing]
+    } catch { return DEFAULT_NAV_CONFIG }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('ts_nav_config', JSON.stringify(navConfig))
+  }, [navConfig])
+
+  const toggleNavItem = useCallback((id) => {
+    setNavConfig(prev => prev.map(item => item.id === id ? { ...item, visible: !item.visible } : item))
+  }, [])
+
+  const moveNavItem = useCallback((id, direction) => {
+    setNavConfig(prev => {
+      const idx = prev.findIndex(i => i.id === id)
+      if (idx < 0) return prev
+      const next = direction === 'up' ? idx - 1 : idx + 1
+      if (next < 0 || next >= prev.length) return prev
+      const arr = [...prev]
+      ;[arr[idx], arr[next]] = [arr[next], arr[idx]]
+      return arr
+    })
+  }, [])
+
   // ── Team (SDRs / Closers) ─────────────────────────────────────
   const [team, setTeam] = useState(() => {
     try {
@@ -344,6 +387,7 @@ export function AppProvider({ children }) {
     activeModule, setActiveModule,
     isAdmin, adminLogin, adminLogout,
     team, updateTeam,
+    navConfig, toggleNavItem, moveNavItem,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
