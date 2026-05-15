@@ -115,3 +115,28 @@ export async function deleteLead(id) {
   const { error } = await _client.from('leads').delete().eq('id', id)
   if (error) throw error
 }
+
+// ─── App Settings (global admin config) ──────────────────────────────────────
+export async function loadSetting(key) {
+  if (!_client) return null
+  try {
+    const { data, error } = await _client
+      .from('app_settings')
+      .select('value')
+      .eq('key', key)
+      .single()
+    if (error) return null
+    return data?.value ?? null
+  } catch { return null }
+}
+
+export async function saveSetting(key, value) {
+  if (!_client) return
+  try {
+    await _client
+      .from('app_settings')
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+  } catch (err) {
+    console.warn('saveSetting failed:', err)
+  }
+}

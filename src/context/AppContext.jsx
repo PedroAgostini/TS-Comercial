@@ -1,5 +1,5 @@
-﻿import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { initSupabase, saveLead, checkColumns } from '../services/dbService'
+﻿import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
+import { initSupabase, saveLead, checkColumns, loadSetting, saveSetting } from '../services/dbService'
 
 const AppContext = createContext(null)
 
@@ -80,7 +80,10 @@ export function AppProvider({ children }) {
   })
 
   useEffect(() => {
+    if (skipPromptsSave.current > 0) { skipPromptsSave.current--; return }
     localStorage.setItem('ts_prompts', JSON.stringify(customPrompts))
+    clearTimeout(promptsDbTimer.current)
+    promptsDbTimer.current = setTimeout(() => saveSetting('custom_prompts', customPrompts), 800)
   }, [customPrompts])
 
   const updatePrompt = useCallback((key, value) => {
@@ -125,6 +128,57 @@ export function AppProvider({ children }) {
     }
   }, [])
 
+  // ── Global Settings Sync (DB → state on connect) ──────────────
+  // Timers for debounced DB saves on frequent inputs
+  const companyDbTimer = useRef(null)
+  const promptsDbTimer = useRef(null)
+  // Prevents re-saving to DB when we're loading values FROM DB
+  const skipNavSave    = useRef(0)
+  const skipTeamSave   = useRef(0)
+  const skipCompanySave  = useRef(0)
+  const skipPromptsSave  = useRef(0)
+  const dbSyncDone = useRef(false)
+
+  const loadGlobalSettings = useCallback(async () => {
+    try {
+      const [navCfg, teamCfg, companyCfg, promptsCfg] = await Promise.all([
+        loadSetting('nav_config'),
+        loadSetting('team'),
+        loadSetting('company_context'),
+        loadSetting('custom_prompts'),
+      ])
+      if (navCfg) {
+        skipNavSave.current++
+        setNavConfig(prev => {
+          const ids = navCfg.map(i => i.id)
+          const missing = prev.filter(d => !ids.includes(d.id))
+          return [...navCfg, ...missing]
+        })
+      }
+      if (teamCfg) {
+        skipTeamSave.current++
+        setTeam(teamCfg)
+      }
+      if (companyCfg) {
+        skipCompanySave.current++
+        setCompanyContext(prev => ({ ...prev, ...companyCfg }))
+      }
+      if (promptsCfg) {
+        skipPromptsSave.current++
+        setCustomPrompts(prev => ({ ...prev, ...promptsCfg }))
+      }
+    } catch (err) {
+      console.warn('Failed to load global settings from DB:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (dbConnected && !dbSyncDone.current) {
+      dbSyncDone.current = true
+      loadGlobalSettings()
+    }
+  }, [dbConnected, loadGlobalSettings])
+
   // ── Company Context ───────────────────────────────────────────
   const [companyContext, setCompanyContext] = useState(() => {
     try {
@@ -134,7 +188,10 @@ export function AppProvider({ children }) {
   })
 
   useEffect(() => {
+    if (skipCompanySave.current > 0) { skipCompanySave.current--; return }
     localStorage.setItem('ts_company', JSON.stringify(companyContext))
+    clearTimeout(companyDbTimer.current)
+    companyDbTimer.current = setTimeout(() => saveSetting('company_context', companyContext), 800)
   }, [companyContext])
 
   const updateCompanyContext = useCallback((field, value) => {
@@ -165,7 +222,9 @@ export function AppProvider({ children }) {
   })
 
   useEffect(() => {
+    if (skipNavSave.current > 0) { skipNavSave.current--; return }
     localStorage.setItem('ts_nav_config', JSON.stringify(navConfig))
+    saveSetting('nav_config', navConfig)
   }, [navConfig])
 
   const toggleNavItem = useCallback((id) => {
@@ -193,7 +252,9 @@ export function AppProvider({ children }) {
   })
 
   useEffect(() => {
+    if (skipTeamSave.current > 0) { skipTeamSave.current--; return }
     localStorage.setItem('ts_team', JSON.stringify(team))
+    saveSetting('team', team)
   }, [team])
 
   const updateTeam = useCallback((type, action, name) => {

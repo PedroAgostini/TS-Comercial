@@ -88,6 +88,15 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS sdr TEXT;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS closer TEXT;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS status TEXT;
 
+-- 2. Tabela de configurações globais (menu, equipe, prompts, empresa)
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value JSONB,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_access" ON app_settings FOR ALL USING (true);
+
 -- 2. Trigger para atualizar updated_at
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
