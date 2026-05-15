@@ -333,7 +333,7 @@ export default function CloserToolboxModule() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex-shrink-0 ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap ${
                 tab === t.id
                   ? 'bg-[#FFA300] text-white'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-surface-hover'

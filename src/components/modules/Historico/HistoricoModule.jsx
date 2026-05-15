@@ -275,7 +275,7 @@ function BriefingView({ briefing }) {
 
 const MODAL_TABS = [
   { id: 'persona',  label: 'Persona',         icon: Brain,         emoji: '🧠', color: 'text-[#FFA300]', check: l => !!l.persona },
-  { id: 'spin',     label: 'SPIN & Respostas', icon: MessageSquare, emoji: '📊', color: 'text-[#FFA300]',   check: l => l.spin_questions?.length > 0 },
+  { id: 'spin',     label: 'SPIN',             icon: MessageSquare, emoji: '📊', color: 'text-[#FFA300]',   check: l => l.spin_questions?.length > 0 },
   { id: 'proposta', label: 'Fechamento',       icon: HandshakeIcon, emoji: '🤝', color: 'text-[#FFA300]',check: l => !!l.proposal },
   { id: 'briefing', label: 'Briefing',         icon: ClipboardList, emoji: '📋', color: 'text-[#FFA300]',    check: l => !!l.briefing },
 ]
@@ -325,13 +325,13 @@ function ClientViewModal({ lead, onClose }) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium flex-shrink-0 border-b-2 transition-all ${
+              className={`flex items-center gap-1.5 px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs sm:text-sm font-medium flex-shrink-0 border-b-2 transition-all whitespace-nowrap ${
                 active
                   ? `border-[#FFA300] ${tab.color}`
                   : 'border-transparent text-slate-500 hover:text-slate-300'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-3.5 h-3.5 hidden sm:block" />
               <span>{tab.label}</span>
               {has
                 ? active
