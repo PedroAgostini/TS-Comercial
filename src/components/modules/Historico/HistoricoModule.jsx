@@ -446,6 +446,7 @@ function LeadFolder({ lead }) {
 }
 
 function LeadCard({ lead, onLoad, onDelete, onView, compact }) {
+  const { isAdmin, navConfig } = useApp()
   const [expanded, setExpanded] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -455,6 +456,11 @@ function LeadCard({ lead, onLoad, onDelete, onView, compact }) {
   const hasProposal = !!lead.proposal
   const hasBriefing = !!lead.briefing
   const answered    = hasSpin ? lead.spin_questions.filter(q => q.answer?.trim()).length : 0
+
+  const navVisible = (navId) => isAdmin || (navConfig.find(n => n.id === navId)?.visible !== false)
+  const showIntelligence = navVisible('intelligence')
+  const showClosing      = navVisible('closing')
+  const showBriefing     = navVisible('briefing')
 
   const handleDelete = async () => {
     setDeleting(true)
@@ -485,10 +491,10 @@ function LeadCard({ lead, onLoad, onDelete, onView, compact }) {
             <DealStatusBadge status={lead.status} />
           </div>
           <div className="flex flex-wrap gap-x-3 gap-y-1">
-            <StatusDot active={hasPersona}  label="Persona" />
-            <StatusDot active={hasSpin}     label={hasSpin ? `SPIN(${answered})` : 'SPIN'} />
-            <StatusDot active={hasProposal} label="Proposta" />
-            <StatusDot active={hasBriefing} label="Briefing" />
+            {showIntelligence && <StatusDot active={hasPersona} label="Persona" />}
+            {showIntelligence && <StatusDot active={hasSpin}    label={hasSpin ? `SPIN(${answered})` : 'SPIN'} />}
+            {showClosing      && <StatusDot active={hasProposal} label="Proposta" />}
+            {showBriefing     && <StatusDot active={hasBriefing} label="Briefing" />}
           </div>
         </div>
         <div className="flex items-center gap-1.5 px-3 py-2.5 border-t border-surface-border bg-surface/20">
@@ -543,10 +549,10 @@ function LeadCard({ lead, onLoad, onDelete, onView, compact }) {
             {lead.closer && <span className="flex items-center gap-1 text-xs text-slate-500"><UserCheck className="w-3 h-3 text-[#FFA300]" />{lead.closer}</span>}
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-            <StatusDot active={hasPersona}  label="Persona" />
-            <StatusDot active={hasSpin}     label={hasSpin ? `SPIN (${answered}/${lead.spin_questions.length})` : 'SPIN'} />
-            <StatusDot active={hasProposal} label="Proposta" />
-            <StatusDot active={hasBriefing} label="Briefing" />
+            {showIntelligence && <StatusDot active={hasPersona}  label="Persona" />}
+            {showIntelligence && <StatusDot active={hasSpin}     label={hasSpin ? `SPIN (${answered}/${lead.spin_questions.length})` : 'SPIN'} />}
+            {showClosing      && <StatusDot active={hasProposal} label="Proposta" />}
+            {showBriefing     && <StatusDot active={hasBriefing} label="Briefing" />}
           </div>
         </div>
         <div className="flex-shrink-0 mt-1 text-slate-600">
