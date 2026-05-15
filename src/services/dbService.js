@@ -131,12 +131,9 @@ export async function loadSetting(key) {
 }
 
 export async function saveSetting(key, value) {
-  if (!_client) return
-  try {
-    await _client
-      .from('app_settings')
-      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
-  } catch (err) {
-    console.warn('saveSetting failed:', err)
-  }
+  if (!_client) throw new Error('Banco de dados não configurado')
+  const { error } = await _client
+    .from('app_settings')
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+  if (error) throw error
 }

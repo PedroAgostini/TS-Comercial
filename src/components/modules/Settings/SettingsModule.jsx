@@ -32,7 +32,7 @@ import {
   GripVertical,
 } from 'lucide-react'
 import { useApp, DEFAULT_PROMPTS } from '../../../context/AppContext'
-import { testConnection, checkColumns } from '../../../services/dbService'
+import { testConnection, checkColumns, saveSetting } from '../../../services/dbService'
 
 const MODELS = [
   {
@@ -302,8 +302,29 @@ const NAV_META = {
 }
 
 function MenuTab() {
-  const { navConfig, toggleNavItem, moveNavItem } = useApp()
+  const { navConfig, toggleNavItem, moveNavItem, dbConnected } = useApp()
   const visibleCount = navConfig.filter(i => i.visible).length
+  const [saving, setSaving] = useState(false)
+  const [saveResult, setSaveResult] = useState(null) // null | 'ok' | 'error'
+  const [saveMsg, setSaveMsg] = useState('')
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveResult(null)
+    try {
+      await saveSetting('nav_config', navConfig)
+      setSaveResult('ok')
+      setSaveMsg('Configurações salvas! Outros dispositivos verão as mudanças ao recarregar.')
+    } catch (err) {
+      setSaveResult('error')
+      setSaveMsg(err.message?.includes('app_settings')
+        ? 'Tabela "app_settings" não existe. Execute o script SQL nas configurações do banco.'
+        : (err.message || 'Erro ao salvar no banco de dados.')
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -399,9 +420,43 @@ function MenuTab() {
         </div>
       </div>
 
+      {/* Save result feedback */}
+      {saveResult && (
+        <div className={`flex items-start gap-2 px-3 py-2.5 rounded-xl border text-xs animate-fade-in ${
+          saveResult === 'ok'
+            ? 'bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]'
+            : 'bg-white/10 border-white/20 text-slate-300'
+        }`}>
+          {saveResult === 'ok'
+            ? <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            : <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          }
+          {saveMsg}
+        </div>
+      )}
+
+      {/* Save button */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving || !dbConnected}
+          className="btn-primary"
+        >
+          {saving
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
+            : <><CheckCircle2 className="w-4 h-4" /> Salvar para Todos os Dispositivos</>
+          }
+        </button>
+        {!dbConnected && (
+          <span className="text-xs text-slate-600 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" /> Banco não conectado
+          </span>
+        )}
+      </div>
+
       <div className="px-3 py-2.5 rounded-lg bg-[#FFA300]/5 border border-[#FFA300]/15 text-xs text-[#FFA300] flex items-start gap-2">
         <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-        <span>As alterações entram em vigor imediatamente para novos acessos. Usuários já conectados verão as mudanças ao recarregar a página.</span>
+        <span>Clique em "Salvar" para aplicar as mudanças em todos os computadores. Requer a tabela <strong>app_settings</strong> no Supabase (veja aba Banco de Dados).</span>
       </div>
     </div>
   )

@@ -291,17 +291,38 @@ function BriefingView({ briefing }) {
   )
 }
 
-// ─── Full-page view modal ─────────────────────────────────────────────────────
+// ─── Nav visibility helper ────────────────────────────────────────────────────
 
-const MODAL_TABS = [
+// Maps Historico tab IDs to the nav item that controls their visibility
+const TAB_NAV_MAP = {
+  persona:  'intelligence',
+  spin:     'intelligence',
+  proposta: 'closing',
+  briefing: 'briefing',
+}
+
+const ALL_MODAL_TABS = [
   { id: 'persona',  label: 'Persona',         icon: Brain,         emoji: '🧠', color: 'text-[#FFA300]', check: l => !!l.persona },
   { id: 'spin',     label: 'SPIN',             icon: MessageSquare, emoji: '📊', color: 'text-[#FFA300]',   check: l => l.spin_questions?.length > 0 },
-  { id: 'proposta', label: 'Fechamento',       icon: HandshakeIcon, emoji: '🤝', color: 'text-[#FFA300]',check: l => !!l.proposal },
+  { id: 'proposta', label: 'Fechamento',       icon: HandshakeIcon, emoji: '🤝', color: 'text-[#FFA300]', check: l => !!l.proposal },
   { id: 'briefing', label: 'Briefing',         icon: ClipboardList, emoji: '📋', color: 'text-[#FFA300]',    check: l => !!l.briefing },
 ]
 
+function useVisibleTabs(isAdmin, navConfig) {
+  return ALL_MODAL_TABS.filter(tab => {
+    if (isAdmin) return true
+    const navId = TAB_NAV_MAP[tab.id]
+    const item = navConfig.find(n => n.id === navId)
+    return item ? item.visible : true
+  })
+}
+
+// ─── Full-page view modal ─────────────────────────────────────────────────────
+
 function ClientViewModal({ lead, onClose }) {
-  const first = MODAL_TABS.find(t => t.check(lead))?.id || 'persona'
+  const { isAdmin, navConfig } = useApp()
+  const MODAL_TABS = useVisibleTabs(isAdmin, navConfig)
+  const first = MODAL_TABS.find(t => t.check(lead))?.id || MODAL_TABS[0]?.id || 'persona'
   const [activeTab, setActiveTab] = useState(first)
 
   useEffect(() => {
@@ -387,15 +408,10 @@ function ClientViewModal({ lead, onClose }) {
 
 // ─── Lead Card ────────────────────────────────────────────────────────────────
 
-const TABS = [
-  { id: 'persona',  label: 'Persona',    icon: Brain,         check: l => !!l.persona },
-  { id: 'spin',     label: 'SPIN',       icon: MessageSquare, check: l => l.spin_questions?.length > 0 },
-  { id: 'proposta', label: 'Fechamento', icon: HandshakeIcon, check: l => !!l.proposal },
-  { id: 'briefing', label: 'Briefing',   icon: ClipboardList, check: l => !!l.briefing },
-]
-
 function LeadFolder({ lead }) {
-  const first = TABS.find(t => t.check(lead))?.id || 'persona'
+  const { isAdmin, navConfig } = useApp()
+  const TABS = useVisibleTabs(isAdmin, navConfig)
+  const first = TABS.find(t => t.check(lead))?.id || TABS[0]?.id || 'persona'
   const [activeTab, setActiveTab] = useState(first)
   return (
     <div className="border-t border-surface-border bg-surface/40">

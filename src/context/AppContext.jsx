@@ -83,7 +83,7 @@ export function AppProvider({ children }) {
     if (skipPromptsSave.current > 0) { skipPromptsSave.current--; return }
     localStorage.setItem('ts_prompts', JSON.stringify(customPrompts))
     clearTimeout(promptsDbTimer.current)
-    promptsDbTimer.current = setTimeout(() => saveSetting('custom_prompts', customPrompts), 800)
+    promptsDbTimer.current = setTimeout(() => saveSetting('custom_prompts', customPrompts).catch(console.warn), 800)
   }, [customPrompts])
 
   const updatePrompt = useCallback((key, value) => {
@@ -191,7 +191,7 @@ export function AppProvider({ children }) {
     if (skipCompanySave.current > 0) { skipCompanySave.current--; return }
     localStorage.setItem('ts_company', JSON.stringify(companyContext))
     clearTimeout(companyDbTimer.current)
-    companyDbTimer.current = setTimeout(() => saveSetting('company_context', companyContext), 800)
+    companyDbTimer.current = setTimeout(() => saveSetting('company_context', companyContext).catch(console.warn), 800)
   }, [companyContext])
 
   const updateCompanyContext = useCallback((field, value) => {
@@ -221,10 +221,10 @@ export function AppProvider({ children }) {
     } catch { return DEFAULT_NAV_CONFIG }
   })
 
+  // navConfig: localStorage only — DB save is explicit via "Salvar" button in Settings
   useEffect(() => {
     if (skipNavSave.current > 0) { skipNavSave.current--; return }
     localStorage.setItem('ts_nav_config', JSON.stringify(navConfig))
-    saveSetting('nav_config', navConfig)
   }, [navConfig])
 
   const toggleNavItem = useCallback((id) => {
@@ -254,7 +254,7 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (skipTeamSave.current > 0) { skipTeamSave.current--; return }
     localStorage.setItem('ts_team', JSON.stringify(team))
-    saveSetting('team', team)
+    saveSetting('team', team).catch(console.warn)
   }, [team])
 
   const updateTeam = useCallback((type, action, name) => {
