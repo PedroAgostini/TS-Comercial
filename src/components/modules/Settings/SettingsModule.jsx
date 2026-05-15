@@ -371,6 +371,17 @@ export default function SettingsModule() {
           Conecte ao Supabase para salvar e carregar personas e perguntas SPIN de cada lead.
         </p>
 
+        {import.meta.env.VITE_SUPABASE_URL ? (
+          <div className="glass-card p-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-[#FFA300] flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-slate-200 mb-1">Banco de dados pré-configurado</p>
+                <p className="text-xs text-slate-500">A conexão com o Supabase está configurada pelo administrador do sistema. Todos os usuários compartilham o mesmo banco de dados automaticamente.</p>
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className="glass-card p-4 space-y-4">
           {/* Setup instructions */}
           <div className="p-3 rounded-lg bg-[#FFA300]/5 border border-[#FFA300]/20 text-xs text-[#FFA300] space-y-1.5">
@@ -457,6 +468,7 @@ export default function SettingsModule() {
             </button>
           </div>
         </div>
+        )}
       </section>}
 
       {/* Migration — shown when columns are missing */}

@@ -96,8 +96,10 @@ export function AppProvider({ children }) {
   }, [])
 
   // ── Supabase / DB ─────────────────────────────────────────────
-  const [supabaseUrl, setSupabaseUrl] = useState(() => localStorage.getItem('ts_sb_url') || '')
-  const [supabaseKey, setSupabaseKey] = useState(() => localStorage.getItem('ts_sb_key') || '')
+  const ENV_URL = import.meta.env.VITE_SUPABASE_URL || ''
+  const ENV_KEY = import.meta.env.VITE_SUPABASE_KEY || ''
+  const [supabaseUrl, setSupabaseUrl] = useState(() => ENV_URL || localStorage.getItem('ts_sb_url') || '')
+  const [supabaseKey, setSupabaseKey] = useState(() => ENV_KEY || localStorage.getItem('ts_sb_key') || '')
   const [dbConnected, setDbConnected] = useState(false)
   const [dbColumnsOk, setDbColumnsOk] = useState(null)
   const [saveStatus, setSaveStatus] = useState('idle')
