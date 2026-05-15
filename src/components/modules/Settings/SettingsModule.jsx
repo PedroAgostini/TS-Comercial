@@ -14,6 +14,7 @@ import {
   Code2,
   RotateCcw,
   Info,
+  Pencil,
 } from 'lucide-react'
 import { useApp, DEFAULT_PROMPTS } from '../../../context/AppContext'
 import { testConnection, checkColumns } from '../../../services/dbService'
@@ -195,8 +196,9 @@ export default function SettingsModule() {
   const [sbKey, setSbKey] = useState(supabaseKey)
   const [showSbKey, setShowSbKey] = useState(false)
   const [testingDb, setTestingDb] = useState(false)
-  const [dbTestResult, setDbTestResult] = useState(null) // null | 'ok' | 'error'
+  const [dbTestResult, setDbTestResult] = useState(null)
   const [dbTestMsg, setDbTestMsg] = useState('')
+  const [editingDb, setEditingDb] = useState(false)
 
   const handleSaveDb = async () => {
     applyDbCredentials(sbUrl.trim(), sbKey.trim())
@@ -371,103 +373,102 @@ export default function SettingsModule() {
           Conecte ao Supabase para salvar e carregar personas e perguntas SPIN de cada lead.
         </p>
 
+        {/* Pré-configurado via env vars */}
         {import.meta.env.VITE_SUPABASE_URL ? (
           <div className="glass-card p-4">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-[#FFA300] flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-slate-200 mb-1">Banco de dados pré-configurado</p>
-                <p className="text-xs text-slate-500">A conexão com o Supabase está configurada pelo administrador do sistema. Todos os usuários compartilham o mesmo banco de dados automaticamente.</p>
+                <p className="text-xs text-slate-500">A conexão foi configurada pelo administrador. Todos os usuários compartilham o mesmo banco automaticamente.</p>
               </div>
             </div>
           </div>
+
+        ) : dbConnected && !editingDb ? (
+          /* Conectado — vista resumida */
+          <div className="glass-card p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-[#FFA300] flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-200">Supabase conectado</p>
+                <p className="text-xs text-slate-500 truncate">{supabaseUrl}</p>
+              </div>
+            </div>
+            {dbColumnsOk === false && (
+              <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg text-xs border bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                <span><strong>Migração necessária:</strong> veja a seção abaixo.</span>
+              </div>
+            )}
+            <button onClick={() => setEditingDb(true)} className="btn-ghost text-xs w-full">
+              <Pencil className="w-3.5 h-3.5" /> Editar credenciais
+            </button>
+          </div>
+
         ) : (
-        <div className="glass-card p-4 space-y-4">
-          {/* Setup instructions */}
-          <div className="p-3 rounded-lg bg-[#FFA300]/5 border border-[#FFA300]/20 text-xs text-[#FFA300] space-y-1.5">
-            <p className="font-semibold text-[#FFA300] flex items-center gap-1.5"><Link className="w-3 h-3" /> Como configurar</p>
-            <p>1. Crie uma conta gratuita em <span className="font-mono text-[#FFA300]">supabase.com</span></p>
-            <p>2. Crie um novo projeto e vá em <strong>SQL Editor</strong></p>
-            <p>3. Execute o script SQL abaixo para criar a tabela</p>
-            <p>4. Vá em <strong>Project Settings → API</strong> para pegar a URL e a anon key</p>
-          </div>
-
-          {/* SQL Script */}
-          <div>
-            <p className="text-xs font-semibold text-slate-400 mb-1.5">Script SQL (rode no Supabase SQL Editor)</p>
-            <pre className="text-xs font-mono text-slate-400 bg-surface border border-surface-border rounded-lg p-3 overflow-x-auto leading-relaxed whitespace-pre">{SQL_SCRIPT}</pre>
-          </div>
-
-          <div className="h-px bg-surface-border" />
-
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Project URL</label>
-            <div className="relative">
-              <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-              <input
-                value={sbUrl}
-                onChange={e => setSbUrl(e.target.value)}
-                placeholder="https://xxxxxxxxxxx.supabase.co"
-                className="input-field pl-9"
-              />
+          /* Formulário de configuração */
+          <div className="glass-card p-4 space-y-4">
+            <div className="p-3 rounded-lg bg-[#FFA300]/5 border border-[#FFA300]/20 text-xs text-[#FFA300] space-y-1.5">
+              <p className="font-semibold flex items-center gap-1.5"><Link className="w-3 h-3" /> Como configurar</p>
+              <p>1. Crie uma conta gratuita em <span className="font-mono">supabase.com</span></p>
+              <p>2. Crie um projeto e vá em <strong>SQL Editor</strong></p>
+              <p>3. Execute o script abaixo para criar a tabela</p>
+              <p>4. Vá em <strong>Project Settings → API</strong> para pegar a URL e a anon key</p>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Anon Key (public)</label>
-            <div className="relative">
-              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-              <input
-                type={showSbKey ? 'text' : 'password'}
-                value={sbKey}
-                onChange={e => setSbKey(e.target.value)}
-                placeholder="eyJh..."
-                className="input-field pl-9 pr-10"
-              />
-              <button
-                onClick={() => setShowSbKey(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-300"
-              >
-                {showSbKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+            <div>
+              <p className="text-xs font-semibold text-slate-400 mb-1.5">Script SQL</p>
+              <pre className="text-xs font-mono text-slate-400 bg-surface border border-surface-border rounded-lg p-2.5 overflow-x-auto leading-relaxed whitespace-pre">{SQL_SCRIPT}</pre>
             </div>
-          </div>
 
-          {dbTestResult && (
-            <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs border ${
-              dbTestResult === 'ok'
-                ? 'bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]'
-                : dbTestResult === 'warn'
+            <div className="h-px bg-surface-border" />
+
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Project URL</label>
+              <div className="relative">
+                <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                <input value={sbUrl} onChange={e => setSbUrl(e.target.value)} placeholder="https://xxxxxxxxxxx.supabase.co" className="input-field pl-9" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5">Anon Key (public)</label>
+              <div className="relative">
+                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                <input type={showSbKey ? 'text' : 'password'} value={sbKey} onChange={e => setSbKey(e.target.value)} placeholder="eyJh..." className="input-field pl-9 pr-10" />
+                <button onClick={() => setShowSbKey(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-300">
+                  {showSbKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {dbTestResult && (
+              <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs border ${
+                dbTestResult === 'ok' || dbTestResult === 'warn'
                   ? 'bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]'
                   : 'bg-white/10 border-white/20 text-slate-300'
-            }`}>
-              {dbTestResult === 'ok'
-                ? <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                : <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />}
-              {dbTestMsg}
-            </div>
-          )}
+              }`}>
+                {dbTestResult === 'ok' ? <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" /> : <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />}
+                {dbTestMsg}
+              </div>
+            )}
 
-          {dbConnected && dbColumnsOk === false && (
-            <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg text-xs border bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]">
-              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-              <span>
-                <strong>Ação necessária:</strong> as colunas <code className="bg-[#FFA300]/10 px-1 rounded">proposal</code> e <code className="bg-[#FFA300]/10 px-1 rounded">briefing</code> não existem no banco.
-                Execute o script <strong>ALTER TABLE</strong> abaixo para habilitar o salvamento de Proposta e Briefing de Clientes.
-              </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button onClick={() => { handleSaveDb(); setEditingDb(false) }} className="btn-primary">
+                <CheckCircle2 className="w-4 h-4" /> Salvar
+              </button>
+              <button onClick={handleTestDb} disabled={testingDb || !sbUrl || !sbKey} className="btn-ghost">
+                {testingDb ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wifi className="w-3.5 h-3.5" />}
+                Testar
+              </button>
+              {editingDb && (
+                <button onClick={() => setEditingDb(false)} className="btn-ghost text-xs ml-auto">
+                  Cancelar
+                </button>
+              )}
             </div>
-          )}
-
-          <div className="flex items-center gap-3">
-            <button onClick={handleSaveDb} className="btn-primary">
-              <CheckCircle2 className="w-4 h-4" /> Salvar Credenciais
-            </button>
-            <button onClick={handleTestDb} disabled={testingDb || !sbUrl || !sbKey} className="btn-ghost">
-              {testingDb ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wifi className="w-3.5 h-3.5" />}
-              Testar Conexão
-            </button>
           </div>
-        </div>
         )}
       </section>}
 
