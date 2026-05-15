@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS app_settings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "public_access" ON app_settings;
 CREATE POLICY "public_access" ON app_settings FOR ALL USING (true);
 
 -- 2. Trigger para atualizar updated_at
