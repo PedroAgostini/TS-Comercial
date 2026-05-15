@@ -67,7 +67,7 @@ Estado: ${state || 'Não informado'}
 ${transcriptionSection}
 
 ═══════════════════════════════════════════
-TAREFA — ESTUDO DE PERSONA
+TAREFA - ESTUDO DE PERSONA
 ═══════════════════════════════════════════
 ${prompts.personaTask}
 
@@ -114,7 +114,7 @@ PERSONA IDENTIFICADA:
 ${JSON.stringify(persona, null, 2)}
 
 ═══════════════════════════════════════════
-TAREFA — SPIN SELLING DINÂMICO
+TAREFA - SPIN SELLING DINÂMICO
 ═══════════════════════════════════════════
 ${spinTask}
 

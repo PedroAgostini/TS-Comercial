@@ -175,11 +175,11 @@ function createEmptyBriefing() {
 
 function buildBriefingTxt(briefing) {
   const today = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
-  const title = [briefing.clientName?.toUpperCase(), briefing.services?.toUpperCase()].filter(Boolean).join(' — ')
+  const title = [briefing.clientName?.toUpperCase(), briefing.services?.toUpperCase()].filter(Boolean).join(' - ')
   const line = '═'.repeat(52)
   const thin = '─'.repeat(52)
 
-  let txt = `${title || 'BRIEFING'} — Brief do projeto\n`
+  let txt = `${title || 'BRIEFING'} - Brief do projeto\n`
   txt += `EuSouTS · Trajetória do Sucesso · ${today}\n`
 
   for (const template of SECTION_TEMPLATES) {
@@ -230,8 +230,8 @@ function BriefingPDFView({ briefing }) {
       <div style={{ borderBottom: '3px solid #FFA300', paddingBottom: '12px', marginBottom: '24px' }}>
         <p style={{ fontSize: '14px', fontWeight: '900', margin: '0 0 4px', lineHeight: 1.4, color: '#111827' }}>
           {briefing.clientName?.toUpperCase() || 'CLIENTE'}
-          {briefing.services ? ` — ${briefing.services.toUpperCase()}` : ''}
-          {' — Brief do projeto'}
+          {briefing.services ? ` - ${briefing.services.toUpperCase()}` : ''}
+          {' - Brief do projeto'}
         </p>
         <p style={{ fontSize: '10px', color: '#9ca3af', margin: 0 }}>EuSouTS · Trajetória do Sucesso · {today}</p>
       </div>
@@ -540,7 +540,7 @@ export default function BriefingModule() {
                   }}
                   className="input-field font-semibold"
                 >
-                  <option value="">— Novo cliente —</option>
+                  <option value="">- Novo cliente -</option>
                   {leads.map(l => (
                     <option key={l.id} value={l.id}>
                       {l.name || l.niche || 'Sem nome'}{l.niche && l.name ? ` (${l.niche})` : ''}
@@ -637,8 +637,8 @@ export default function BriefingModule() {
         {(briefing.clientName || briefing.services) && (
           <div className="px-4 py-2.5 rounded-lg bg-[#FFA300]/5 border border-[#FFA300]/15">
             <p className="text-xs font-bold text-[#FFA300] leading-snug">
-              {[briefing.clientName?.toUpperCase(), briefing.services?.toUpperCase()].filter(Boolean).join(' — ')}
-              {' — Brief do projeto'}
+              {[briefing.clientName?.toUpperCase(), briefing.services?.toUpperCase()].filter(Boolean).join(' - ')}
+              {' - Brief do projeto'}
             </p>
           </div>
         )}

@@ -137,7 +137,7 @@ export default function Step1Input() {
         <div className="flex items-center gap-2.5 mb-1">
           <MessageSquare className="w-4 h-4 text-[#FFA300]" />
           <h2 className="text-sm font-semibold text-slate-100">Transcrição / Histórico</h2>
-          <span className="text-xs text-slate-600 ml-auto">opcional — enriquece a persona</span>
+          <span className="text-xs text-slate-600 ml-auto">opcional - enriquece a persona</span>
         </div>
         <p className="text-xs text-slate-500 mb-4">
           Suba o TXT do WhatsApp, transcrição da call (Hunter) ou cole o texto direto abaixo.

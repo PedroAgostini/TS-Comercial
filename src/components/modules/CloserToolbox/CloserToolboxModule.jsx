@@ -87,7 +87,7 @@ function ROICalc() {
           </div>
           {payback && (
             <p className="text-xs text-slate-500 mt-3">
-              💡 Payback estimado: <strong className="text-slate-300">{payback} meses</strong> — para cada R$ 1 investido, retorno estimado de{' '}
+              💡 Payback estimado: <strong className="text-slate-300">{payback} meses</strong> - para cada R$ 1 investido, retorno estimado de{' '}
               <strong className="text-[#FFA300]">R$ {roi > 0 ? (1 + parseInt(roi) / 100).toFixed(2) : '0.00'}</strong>
             </p>
           )}
@@ -151,7 +151,7 @@ function ClosingChecklist() {
             ? 'bg-[#FFA300]/10 border-[#FFA300]/30 text-[#FFA300]'
             : 'bg-surface-border text-slate-500'
         }`}>
-          {done}/{total} — {pct}%
+          {done}/{total} - {pct}%
         </div>
       </div>
 
@@ -208,7 +208,7 @@ const TRIGGERS = [
     bg: 'bg-[#FFA300]/10',
     border: 'border-[#FFA300]/20',
     scripts: [
-      '"Nossa capacidade de onboarding esse mês está quase fechada — tenho só {X} vagas. Não quero te perder por isso."',
+      '"Nossa capacidade de onboarding esse mês está quase fechada - tenho só {X} vagas. Não quero te perder por isso."',
       '"Cada mês que passa sem marketing estruturado é receita que vai pro seu concorrente. Não é pressão, é dado."',
       '"Se você começar hoje, em 90 dias já terá resultados palpáveis. Se esperar mais um mês, esse prazo se desloca."',
     ],
@@ -220,9 +220,9 @@ const TRIGGERS = [
     bg: 'bg-[#FFA300]/10',
     border: 'border-[#FFA300]/20',
     scripts: [
-      '"Temos um cliente no mesmo nicho que você em {cidade} — em 4 meses ele {resultado concreto}. Posso te mostrar?"',
-      '"Essa estratégia que te apresentei funcionou especificamente pra {nicho similar} — e o perfil do negócio é bem parecido."',
-      '"Olha, não sou eu dizendo — são os números dos clientes que já fizeram esse movimento."',
+      '"Temos um cliente no mesmo nicho que você em {cidade} - em 4 meses ele {resultado concreto}. Posso te mostrar?"',
+      '"Essa estratégia que te apresentei funcionou especificamente pra {nicho similar} - e o perfil do negócio é bem parecido."',
+      '"Olha, não sou eu dizendo - são os números dos clientes que já fizeram esse movimento."',
     ],
   },
   {
@@ -232,8 +232,8 @@ const TRIGGERS = [
     bg: 'bg-[#FFA300]/10',
     border: 'border-[#FFA300]/20',
     scripts: [
-      '"Trabalho com dedicação exclusiva — por isso não atendo mais de {X} clientes por vez. Hoje tenho {Y} vaga(s)."',
-      '"O plano que você precisa não está mais aberto para novos clientes a partir de {data} — estamos reestruturando."',
+      '"Trabalho com dedicação exclusiva - por isso não atendo mais de {X} clientes por vez. Hoje tenho {Y} vaga(s)."',
+      '"O plano que você precisa não está mais aberto para novos clientes a partir de {data} - estamos reestruturando."',
       '"Esse valor que te passei é o que está em vigor agora. Em {mês} teremos reajuste."',
     ],
   },
@@ -245,7 +245,7 @@ const TRIGGERS = [
     border: 'border-[#FFA300]/20',
     scripts: [
       '"Analisamos mais de {X} negócios no seu nicho. O padrão que vejo é exatamente o que você me descreveu."',
-      '"Somos especializados em {nicho} — não atendemos todo tipo de negócio justamente pra ser referência no seu segmento."',
+      '"Somos especializados em {nicho} - não atendemos todo tipo de negócio justamente pra ser referência no seu segmento."',
       '"Te falo como especialista: o que você tá fazendo hoje não vai te levar onde você quer chegar."',
     ],
   },
@@ -355,7 +355,7 @@ export default function CloserToolboxModule() {
               <p className="text-sm font-semibold text-slate-200">Como usar na call</p>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Preencha com os dados do lead durante a conversa. Mostre o ROI projetado na tela — ver os números concretos é muito mais persuasivo do que descrever verbalmente. Use como ancoragem: <em className="text-slate-300">"Se o retorno projetado é {`{X}`}, o investimento de {`{Y}`} já se paga em {`{Z}`} meses."</em>
+              Preencha com os dados do lead durante a conversa. Mostre o ROI projetado na tela - ver os números concretos é muito mais persuasivo do que descrever verbalmente. Use como ancoragem: <em className="text-slate-300">"Se o retorno projetado é {`{X}`}, o investimento de {`{Y}`} já se paga em {`{Z}`} meses."</em>
             </p>
           </div>
         </div>
@@ -370,7 +370,7 @@ export default function CloserToolboxModule() {
       {tab === 'triggers' && (
         <div className="space-y-3 animate-fade-in">
           <p className="text-sm text-slate-500 mb-4">
-            Gatilhos mentais éticos — fundamentados em situações reais. Use com contexto e honestidade. Passe o mouse para copiar o script.
+            Gatilhos mentais éticos - fundamentados em situações reais. Use com contexto e honestidade. Passe o mouse para copiar o script.
           </p>
           {TRIGGERS.map(t => <TriggerCard key={t.name} trigger={t} />)}
         </div>

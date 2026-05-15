@@ -254,7 +254,7 @@ export default function EmpresaModule() {
             Nossa Empresa
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Essas informações são injetadas em <strong className="text-slate-400">todos os prompts da IA</strong> — persona, perguntas SPIN e proposta.
+            Essas informações são injetadas em <strong className="text-slate-400">todos os prompts da IA</strong> - persona, perguntas SPIN e proposta.
           </p>
         </div>
         <button

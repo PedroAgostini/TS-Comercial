@@ -33,7 +33,7 @@ const BRIEFING_SECTIONS = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso) {
-  if (!iso) return '—'
+  if (!iso) return '-'
   return new Date(iso).toLocaleDateString('pt-BR', {
     day: '2-digit', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
@@ -139,7 +139,7 @@ function SpinView({ spinQuestions, callNotes }) {
       {byCategory.map(({ key, meta, questions }) => (
         <div key={key} className={`rounded-xl border ${meta.border} overflow-hidden`}>
           <div className={`flex items-center justify-between px-4 py-2.5 ${meta.bg}`}>
-            <span className={`text-xs font-bold uppercase tracking-wider ${meta.color}`}>{meta.letter} — {meta.label}</span>
+            <span className={`text-xs font-bold uppercase tracking-wider ${meta.color}`}>{meta.letter} - {meta.label}</span>
             <span className={`text-xs ${meta.color}`}>{questions.filter(q => q.answer?.trim()).length}/{questions.length}</span>
           </div>
           <div className="divide-y divide-surface-border/40">
@@ -215,8 +215,8 @@ function ProposalView({ proposal }) {
         <Field emoji="⚫" label="Próximos Passos" value={proposal.briefing?.proximosPassos} />
       </Section>
       <Section emoji="📊" title="Metas" color="text-[#FFA300]" bg="bg-[#FFA300]/10" border="border-[#FFA300]/20">
-        <Field emoji="🟣" label="Metas — 3 Meses" value={proposal.metas?.mes3} />
-        <Field emoji="🟣" label="Metas — 6 Meses" value={proposal.metas?.mes6} />
+        <Field emoji="🟣" label="Metas - 3 Meses" value={proposal.metas?.mes3} />
+        <Field emoji="🟣" label="Metas - 6 Meses" value={proposal.metas?.mes6} />
       </Section>
       <Section emoji="💡" title="Fechamento" color="text-[#FFA300]" bg="bg-[#FFA300]/10" border="border-[#FFA300]/20">
         <Field emoji="🟡" label="Justificativa para o Closer" value={proposal.justificativa} />
@@ -236,7 +236,7 @@ function BriefingView({ briefing }) {
       {(briefing.clientName || briefing.services) && (
         <div className="px-3 py-2 rounded-lg bg-[#FFA300]/5 border border-[#FFA300]/15">
           <p className="text-xs font-bold text-[#FFA300]">
-            {[briefing.clientName?.toUpperCase(), briefing.services?.toUpperCase()].filter(Boolean).join(' — ')}
+            {[briefing.clientName?.toUpperCase(), briefing.services?.toUpperCase()].filter(Boolean).join(' - ')}
           </p>
         </div>
       )}

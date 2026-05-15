@@ -35,10 +35,10 @@ REGRAS ABSOLUTAS:
 ✓ As perguntas de NECESSIDADE devem criar desejo pelos benefícios específicos que nossa empresa entrega
 
 CATEGORIAS:
-S — SITUAÇÃO: Entender o contexto atual sem parecer interrogatório
-P — PROBLEMA: Revelar dores e desafios de forma empática
-I — IMPLICAÇÃO: Fazer o lead sentir o custo real de NÃO resolver o problema
-N — NECESSIDADE DE SOLUÇÃO: Criar o desejo pela nossa solução especificamente`,
+S - SITUAÇÃO: Entender o contexto atual sem parecer interrogatório
+P - PROBLEMA: Revelar dores e desafios de forma empática
+I - IMPLICAÇÃO: Fazer o lead sentir o custo real de NÃO resolver o problema
+N - NECESSIDADE DE SOLUÇÃO: Criar o desejo pela nossa solução especificamente`,
 
   proposalTask: `Com base em TUDO acima:
 1. Identifique o nível de serviço/escopo mais adequado para esse lead (baseado nos serviços da empresa)

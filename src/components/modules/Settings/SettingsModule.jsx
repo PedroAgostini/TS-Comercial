@@ -23,25 +23,25 @@ const MODELS = [
   {
     id: 'gemini-2.5-pro',
     label: 'Gemini 2.5 Pro',
-    desc: 'Modelo mais poderoso — melhor raciocínio e análise profunda',
+    desc: 'Modelo mais poderoso - melhor raciocínio e análise profunda',
     badge: 'PRO',
   },
   {
     id: 'gemini-2.5-flash',
     label: 'Gemini 2.5 Flash',
-    desc: 'Rápido e capaz — ótimo equilíbrio custo/desempenho',
+    desc: 'Rápido e capaz - ótimo equilíbrio custo/desempenho',
     badge: 'NOVO',
   },
   {
     id: 'gemini-2.0-flash',
     label: 'Gemini 2.0 Flash',
-    desc: 'Estável e veloz — recomendado para uso diário intenso',
+    desc: 'Estável e veloz - recomendado para uso diário intenso',
     badge: null,
   },
   {
     id: 'gemini-1.5-flash',
     label: 'Gemini 1.5 Flash',
-    desc: 'Versão anterior — fallback confiável',
+    desc: 'Versão anterior - fallback confiável',
     badge: null,
   },
 ]
@@ -87,25 +87,25 @@ const PROMPT_FIELDS = [
   {
     key: 'systemInstruction',
     label: 'Instrução do Sistema',
-    desc: 'Persona e princípios gerais da IA — vale para Persona, SPIN e Proposta.',
+    desc: 'Persona e princípios gerais da IA - vale para Persona, SPIN e Proposta.',
     rows: 7,
   },
   {
     key: 'personaTask',
-    label: 'Tarefa — Geração de Persona',
+    label: 'Tarefa - Geração de Persona',
     desc: 'O que a IA deve analisar e como estruturar o estudo de persona.',
     rows: 9,
   },
   {
     key: 'spinTask',
-    label: 'Tarefa — Perguntas SPIN',
+    label: 'Tarefa - Perguntas SPIN',
     desc: 'Regras e categorias para gerar as 20 perguntas SPIN. Use {niche} como variável do nicho.',
     rows: 11,
     hint: 'A variável {niche} é substituída automaticamente pelo nicho do lead.',
   },
   {
     key: 'proposalTask',
-    label: 'Tarefa — Proposta & Briefing',
+    label: 'Tarefa - Proposta & Briefing',
     desc: 'Missão da IA ao gerar a proposta comercial e o briefing para a operação.',
     rows: 7,
   },
@@ -379,7 +379,7 @@ export default function SettingsModule() {
         </p>
 
         {dbConnected && !editingDb ? (
-          /* Conectado — vista resumida */
+          /* Conectado - vista resumida */
           <div className="glass-card p-4 space-y-3">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-[#FFA300] flex-shrink-0" />
@@ -465,7 +465,7 @@ export default function SettingsModule() {
         )}
       </section>}
 
-      {/* Migration — shown when columns are missing */}
+      {/* Migration - shown when columns are missing */}
       {tab === 'db' && dbConnected && dbColumnsOk === false && (
         <section>
           <div className="flex items-center gap-2.5 mb-1">

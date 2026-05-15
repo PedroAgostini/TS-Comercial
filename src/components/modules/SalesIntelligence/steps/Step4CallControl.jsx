@@ -25,7 +25,7 @@ const CATEGORIES = [
 // ─── PDF Print View ───────────────────────────────────────────────────────────
 function PDFView({ leadData, persona, spinQuestions, callNotes }) {
   const today = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
-  const SPIN_LABEL = { situacao: 'S — Situação', problema: 'P — Problema', implicacao: 'I — Implicação', necessidade: 'N — Necessidade' }
+  const SPIN_LABEL = { situacao: 'S - Situação', problema: 'P - Problema', implicacao: 'I - Implicação', necessidade: 'N - Necessidade' }
 
   return (
     <div id="pdf-content" style={{ display: 'none', padding: '32px', background: 'white', color: '#111827', fontFamily: 'Inter, sans-serif' }}>
@@ -34,7 +34,7 @@ function PDFView({ leadData, persona, spinQuestions, callNotes }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#FFA300', margin: 0 }}>TS Comercial</h1>
-            <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>EuSouTS — Trajetória do Sucesso</p>
+            <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>EuSouTS - Trajetória do Sucesso</p>
           </div>
           <div style={{ textAlign: 'right', fontSize: '12px', color: '#6b7280' }}>
             <p style={{ margin: 0 }}>{today}</p>
@@ -75,7 +75,7 @@ function PDFView({ leadData, persona, spinQuestions, callNotes }) {
       {/* SPIN */}
       <div style={{ marginBottom: '28px' }}>
         <h2 style={{ fontSize: '15px', fontWeight: '700', color: '#FFA300', borderBottom: '1px solid #e5e7eb', paddingBottom: '6px', marginBottom: '12px' }}>
-          SPIN Selling — Perguntas e Respostas
+          SPIN Selling - Perguntas e Respostas
         </h2>
         {CATEGORIES.map(cat => {
           const qs = spinQuestions.filter(q => q.category === cat.key)

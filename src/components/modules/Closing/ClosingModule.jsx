@@ -121,7 +121,7 @@ function ClosingPDFView({ proposal, leadData }) {
     <div id="closing-pdf" style={{ display: 'none', padding: '36px', background: 'white', color: '#111827', fontFamily: 'Arial, sans-serif' }}>
       <div style={{ borderBottom: '3px solid #FFA300', paddingBottom: '12px', marginBottom: '24px' }}>
         <p style={{ fontSize: '14px', fontWeight: '900', margin: '0 0 4px', lineHeight: 1.4 }}>
-          {(leadData.name || leadData.niche || 'LEAD').toUpperCase()} — Briefing para a Operação
+          {(leadData.name || leadData.niche || 'LEAD').toUpperCase()} - Briefing para a Operação
         </p>
         <p style={{ fontSize: '10px', color: '#9ca3af', margin: 0 }}>EuSouTS · Trajetória do Sucesso · {today}</p>
       </div>
@@ -138,8 +138,8 @@ function ClosingPDFView({ proposal, leadData }) {
       ]} />
 
       <PDFSection emoji="📊" title="METAS" fields={[
-        ['🟣', 'Metas — 3 Meses', proposal.metas?.mes3],
-        ['🟣', 'Metas — 6 Meses', proposal.metas?.mes6],
+        ['🟣', 'Metas - 3 Meses', proposal.metas?.mes3],
+        ['🟣', 'Metas - 6 Meses', proposal.metas?.mes6],
       ]} />
 
       <PDFSection emoji="💡" title="FECHAMENTO" fields={[
@@ -233,11 +233,11 @@ export default function ClosingModule() {
                 className="input-field appearance-none pr-9"
               >
                 <option value="">
-                  {loadingLeads ? 'Carregando clientes...' : leads.length === 0 ? 'Nenhum cliente salvo' : '— Selecione um cliente —'}
+                  {loadingLeads ? 'Carregando clientes...' : leads.length === 0 ? 'Nenhum cliente salvo' : '- Selecione um cliente -'}
                 </option>
                 {leads.map(l => (
                   <option key={l.id} value={l.id}>
-                    {[l.name, l.niche].filter(Boolean).join(' — ') || 'Lead sem nome'}
+                    {[l.name, l.niche].filter(Boolean).join(' - ') || 'Lead sem nome'}
                     {l.state ? ` · ${l.state}` : ''}
                   </option>
                 ))}
@@ -248,7 +248,7 @@ export default function ClosingModule() {
               <div className="mt-2 flex items-center gap-2 text-xs">
                 <span className={`w-2 h-2 rounded-full flex-shrink-0 ${persona ? 'bg-[#FFA300]' : 'bg-[#FFA300]'}`} />
                 <span className={persona ? 'text-[#FFA300]' : 'text-[#FFA300]'}>
-                  {persona ? 'Dossiê disponível' : 'Sem dossiê — gere na aba Inteligência de Vendas'}
+                  {persona ? 'Dossiê disponível' : 'Sem dossiê - gere na aba Inteligência de Vendas'}
                 </span>
                 {leadData.niche && <span className="text-slate-600">· {leadData.niche}</span>}
                 {leadData.state && <span className="text-slate-600">· {leadData.state}</span>}
@@ -310,7 +310,7 @@ export default function ClosingModule() {
           <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
             <div className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-surface border border-surface-border text-center">
               <p className="text-xs text-slate-500 mb-0.5 sm:mb-1">Lead</p>
-              <p className="text-xs sm:text-sm font-semibold text-slate-200 truncate">{leadData.name || leadData.niche || '—'}</p>
+              <p className="text-xs sm:text-sm font-semibold text-slate-200 truncate">{leadData.name || leadData.niche || '-'}</p>
             </div>
             <div className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-surface border border-surface-border text-center">
               <p className="text-xs text-slate-500 mb-0.5 sm:mb-1">SPIN</p>
@@ -370,7 +370,7 @@ export default function ClosingModule() {
             <div className="flex items-center justify-between px-5 py-3.5 bg-[#FFA300]/5 border-b border-[#FFA300]/15">
               <div>
                 <p className="text-sm font-bold text-slate-100">
-                  {(leadData.name || leadData.niche || 'LEAD').toUpperCase()} — Briefing para a Operação
+                  {(leadData.name || leadData.niche || 'LEAD').toUpperCase()} - Briefing para a Operação
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5">Gerado com base no SPIN + Persona</p>
               </div>
@@ -392,8 +392,8 @@ export default function ClosingModule() {
               </DocSection>
 
               <DocSection emoji="📊" title="METAS" color="text-[#FFA300]" bg="bg-[#FFA300]/10" border="border-[#FFA300]/20">
-                <DocField emoji="🟣" label="Metas — 3 Meses" value={proposal.metas?.mes3} />
-                <DocField emoji="🟣" label="Metas — 6 Meses" value={proposal.metas?.mes6} />
+                <DocField emoji="🟣" label="Metas - 3 Meses" value={proposal.metas?.mes3} />
+                <DocField emoji="🟣" label="Metas - 6 Meses" value={proposal.metas?.mes6} />
               </DocSection>
 
               <DocSection emoji="💡" title="FECHAMENTO" color="text-[#FFA300]" bg="bg-[#FFA300]/10" border="border-[#FFA300]/20">
@@ -437,7 +437,7 @@ export default function ClosingModule() {
 
 // ─── Plain-text copy format ───────────────────────────────────────────────────
 function buildBriefingText(proposal, leadData) {
-  const header = `${(leadData.name || leadData.niche || 'LEAD').toUpperCase()} — Briefing para a Operação`
+  const header = `${(leadData.name || leadData.niche || 'LEAD').toUpperCase()} - Briefing para a Operação`
   const today = new Date().toLocaleDateString('pt-BR')
 
   const field = (emoji, label, value) => {
@@ -459,8 +459,8 @@ ${field('🔴', 'Alertas para a Equipe', proposal.briefing?.alertas)}
 ${field('⚫', 'Próximos Passos', proposal.briefing?.proximosPassos)}
 
 📊 METAS
-${field('🟣', 'Metas — 3 Meses', proposal.metas?.mes3)}
-${field('🟣', 'Metas — 6 Meses', proposal.metas?.mes6)}
+${field('🟣', 'Metas - 3 Meses', proposal.metas?.mes3)}
+${field('🟣', 'Metas - 6 Meses', proposal.metas?.mes6)}
 
 💡 FECHAMENTO
 ${field('🟡', 'Justificativa para o Closer', proposal.justificativa)}

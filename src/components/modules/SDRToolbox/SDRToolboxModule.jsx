@@ -77,7 +77,7 @@ const OBJECTIONS = [
     bg: 'bg-[#FFA300]/5',
     border: 'border-[#FFA300]/20',
     responses: [
-      'Entendo. Posso te perguntar: comparando com o quê? Muitos clientes que falam isso estão comparando com fazer nada — e aí sim fica caro, porque os concorrentes ficam crescendo.',
+      'Entendo. Posso te perguntar: comparando com o quê? Muitos clientes que falam isso estão comparando com fazer nada - e aí sim fica caro, porque os concorrentes ficam crescendo.',
       '"Caro" é quando você paga e não tem retorno. O que eu te proponho é diferente: a gente projeta juntos o que você precisa faturar a mais para o investimento se pagar. Você topa fazer essa conta?',
       'Faz sentido a sua preocupação. Me conta: qual seria o valor ideal pra você? Quero entender o que cabe no seu cenário hoje.',
     ],
@@ -113,7 +113,7 @@ const OBJECTIONS = [
     bg: 'bg-[#FFA300]/5',
     border: 'border-[#FFA300]/20',
     responses: [
-      'Que bom que você falou isso — é exatamente o que mais escuto. Me conta: o que foi feito? Quero entender onde quebrou, porque na maioria dos casos não foi o marketing que falhou, foi a estratégia por trás.',
+      'Que bom que você falou isso - é exatamente o que mais escuto. Me conta: o que foi feito? Quero entender onde quebrou, porque na maioria dos casos não foi o marketing que falhou, foi a estratégia por trás.',
       'Faz total sentido ter essa desconfiança. Posso te mostrar em 5 minutos o que a gente faz diferente? Se não fizer sentido, você desliga sem problema.',
       'Entendo. E o que você acha que faltou naquela experiência? Pergunto porque cada negócio tem um gargalo diferente, e o erro mais comum é aplicar solução errada pro problema.',
     ],
@@ -184,31 +184,31 @@ const TEMPLATES = [
   {
     id: 'cold-email-1',
     type: 'email',
-    label: 'Cold Email — Dor + Gancho',
+    label: 'Cold Email - Dor + Gancho',
     icon: Mail,
     template: `Assunto: {Nome}, seus concorrentes já estão fazendo isso
 
 Olá {Nome},
 
-Vi que você tem {Tipo de negócio} em {Cidade} — parabéns pelo que construiu.
+Vi que você tem {Tipo de negócio} em {Cidade} - parabéns pelo que construiu.
 
-Fui pesquisar um pouco e percebi que {Observação sobre o digital deles, ex: seu Instagram não está convertendo} — e esse é exatamente o padrão que eu vejo em negócios com potencial de 2x de crescimento mas que ainda não desbloquearam o digital.
+Fui pesquisar um pouco e percebi que {Observação sobre o digital deles, ex: seu Instagram não está convertendo} - e esse é exatamente o padrão que eu vejo em negócios com potencial de 2x de crescimento mas que ainda não desbloquearam o digital.
 
 Trabalho com {Nicho} aqui na região e nos últimos meses ajudei negócios parecidos com o seu a {Resultado concreto, ex: triplicar os agendamentos online}.
 
 Teria 15 minutos essa semana pra eu te mostrar o que faríamos especificamente pro seu caso?
 
 {Seu nome}
-EuSouTS — Assessoria de Marketing`,
+EuSouTS - Assessoria de Marketing`,
   },
   {
     id: 'whatsapp-follow-1',
     type: 'whatsapp',
-    label: 'WhatsApp — Follow-up Pós-reunião',
+    label: 'WhatsApp - Follow-up Pós-reunião',
     icon: MessageSquare,
     template: `Olá {Nome}! Tudo bem? 😊
 
-Foi ótima nossa conversa hoje. Fiquei pensando no que você me contou sobre {dor principal que ele mencionou} — isso realmente é o gargalo que trava o crescimento de muitos negócios no seu segmento.
+Foi ótima nossa conversa hoje. Fiquei pensando no que você me contou sobre {dor principal que ele mencionou} - isso realmente é o gargalo que trava o crescimento de muitos negócios no seu segmento.
 
 Como prometido, vou te mandar o resumo do que conversamos:
 
@@ -223,13 +223,13 @@ Qualquer dúvida, é só falar. 🤝`,
   {
     id: 'whatsapp-noshow',
     type: 'whatsapp',
-    label: 'WhatsApp — No-show (sumiu após reunião)',
+    label: 'WhatsApp - No-show (sumiu após reunião)',
     icon: MessageSquare,
     template: `Oi {Nome}, tudo bem?
 
 Não tive mais notícias suas desde nossa conversa e fico imaginando se aconteceu alguma coisa ou se surgiu alguma dúvida que não ficou clara.
 
-Sem pressão nenhuma — mas se o projeto ainda fizer sentido pra você, posso reservar mais alguns minutos essa semana.
+Sem pressão nenhuma - mas se o projeto ainda fizer sentido pra você, posso reservar mais alguns minutos essa semana.
 
 Se por algum motivo o momento não é esse, pode falar tranquilo também. Prefiro saber do que ficar no escuro. 😊
 
@@ -238,9 +238,9 @@ Como você tá?`,
   {
     id: 'email-proposta',
     type: 'email',
-    label: 'E-mail — Envio de Proposta',
+    label: 'E-mail - Envio de Proposta',
     icon: Mail,
-    template: `Assunto: Proposta personalizada para {Nome} — {Tipo de negócio}
+    template: `Assunto: Proposta personalizada para {Nome} - {Tipo de negócio}
 
 Olá {Nome},
 
@@ -257,7 +257,7 @@ Conforme combinamos, segue a proposta que preparei especialmente para o cenário
 • Em 6 meses: {meta}
 
 💰 INVESTIMENTO:
-{valor} — {forma de pagamento}
+{valor} - {forma de pagamento}
 
 ⚠️ IMPORTANTE: Essa proposta é válida até {data}, pois nossa agenda de onboardings para esse mês está quase fechada.
 
@@ -266,7 +266,7 @@ Para confirmar, é só responder esse e-mail ou me chamar no WhatsApp.
 Qualquer dúvida, estou à disposição.
 
 {Seu nome}
-EuSouTS — Assessoria de Marketing
+EuSouTS - Assessoria de Marketing
 {Telefone}`,
   },
 ]
