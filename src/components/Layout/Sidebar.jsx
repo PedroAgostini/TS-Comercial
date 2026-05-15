@@ -1,0 +1,143 @@
+import React from 'react'
+import {
+  Settings, Brain, HandshakeIcon, Target, Zap,
+  ChevronRight, Database, Cloud, Building2, ClipboardList, X,
+} from 'lucide-react'
+import { useApp } from '../../context/AppContext'
+
+const nav = [
+  { id: 'intelligence', label: 'Inteligência de Vendas', icon: Brain,         desc: 'Persona + SPIN' },
+  { id: 'closing',      label: 'Fechamento & Proposta',  icon: HandshakeIcon, desc: 'Plano de ação' },
+  { id: 'briefing',     label: 'Briefing de Clientes',   icon: ClipboardList, desc: 'Onboarding do cliente' },
+  { id: 'historico',    label: 'Histórico de Leads',     icon: Database,      desc: 'Leads salvos' },
+  { id: 'sdr',          label: 'Ferramentas SDR',         icon: Zap,           desc: 'Prospecção' },
+  { id: 'closer',       label: 'Ferramentas Closer',      icon: Target,        desc: 'Fechamento' },
+  { id: 'empresa',      label: 'Nossa Empresa',           icon: Building2,     desc: 'Contexto para IA' },
+  { id: 'settings',     label: 'Configurações',           icon: Settings,      desc: 'IA + Banco de Dados', muted: true },
+]
+
+function DbBadge() {
+  const { dbConnected, saveStatus } = useApp()
+  const saving = saveStatus === 'saving'
+  const saved  = saveStatus === 'saved'
+  const err    = saveStatus === 'error'
+
+  if (!dbConnected) return (
+    <p className="text-xs text-slate-700 mt-0.5 flex items-center gap-1.5">
+      <Cloud className="w-3 h-3" /> Sem banco de dados
+    </p>
+  )
+  return (
+    <p className={`text-xs mt-0.5 flex items-center gap-1.5 transition-colors ${
+      err ? 'text-slate-400' : 'text-[#FFA300]'
+    }`}>
+      <Database className="w-3 h-3" />
+      {saving ? 'Salvando...' : saved ? 'Salvo!' : err ? 'Erro ao salvar' : 'DB conectado'}
+    </p>
+  )
+}
+
+export default function Sidebar({ open, onClose }) {
+  const { activeModule, setActiveModule } = useApp()
+
+  const handleNav = (id) => {
+    setActiveModule(id)
+    onClose()
+  }
+
+  return (
+    <aside className={`
+      fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
+      w-64 flex-shrink-0 flex flex-col h-screen
+      border-r border-white/5
+      transition-transform duration-300 ease-out
+      ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+    `}
+    style={{
+      background: 'linear-gradient(180deg, #0a0a0a 0%, #080808 100%)',
+    }}>
+
+      {/* Logo */}
+      <div className="px-5 py-5 border-b border-white/5 flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 relative"
+              style={{
+                background: 'linear-gradient(135deg, #1a1000 0%, #0f0800 100%)',
+                border: '1px solid rgba(255,163,0,0.3)',
+                boxShadow: '0 0 20px rgba(255,163,0,0.12)',
+              }}>
+              <img src="/logo-ts.svg" alt="TS" className="w-7 h-6 object-contain" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white leading-none tracking-wide">TS</p>
+              <p className="text-xs mt-0.5 font-semibold" style={{ color: '#FFA300' }}>Comercial</p>
+            </div>
+          </div>
+          {/* Close button — mobile only */}
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/5 transition-all"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+        {nav.map(item => {
+          const Icon = item.icon
+          const active = activeModule === item.id
+          return (
+            <button
+              key={item.id}
+              onClick={() => handleNav(item.id)}
+              className={`nav-item group ${active ? 'nav-item-active' : ''}`}
+            >
+              {/* Icon container */}
+              <div className={`
+                w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200
+                ${active
+                  ? 'bg-[#FFA300]/15 border border-[#FFA300]/30'
+                  : 'bg-transparent border border-transparent group-hover:bg-white/4 group-hover:border-white/6'
+                }
+              `}>
+                <Icon className={`w-3.5 h-3.5 transition-colors ${
+                  active ? 'text-[#FFA300]'
+                  : item.muted ? 'text-slate-600 group-hover:text-slate-400'
+                  : 'text-slate-600 group-hover:text-slate-400'
+                }`} />
+              </div>
+
+              {/* Labels */}
+              <div className="flex-1 min-w-0 text-left">
+                <p className={`text-xs font-semibold leading-none truncate transition-colors ${
+                  active ? 'text-white'
+                  : 'text-slate-500 group-hover:text-slate-300'
+                }`}>
+                  {item.label}
+                </p>
+                <p className={`text-xs mt-0.5 truncate transition-colors ${
+                  active ? 'text-[#FFA300]/70'
+                  : 'text-slate-700 group-hover:text-slate-600'
+                }`}>
+                  {item.desc}
+                </p>
+              </div>
+
+              {active && <ChevronRight className="w-3 h-3 text-[#FFA300]/50 flex-shrink-0" />}
+            </button>
+          )
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="px-4 py-4 border-t border-white/5 flex-shrink-0">
+        <DbBadge />
+        <p className="text-xs text-slate-500 mt-2">Developed by <span className="text-[#FFA300] font-semibold">Pedro Agostini</span></p>
+        <p className="text-xs text-slate-700 font-medium mt-1">EuSouTS © {new Date().getFullYear()}</p>
+      </div>
+    </aside>
+  )
+}

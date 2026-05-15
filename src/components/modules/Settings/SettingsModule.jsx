@@ -1,0 +1,483 @@
+﻿import React, { useState } from 'react'
+import {
+  KeyRound,
+  Bot,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  AlertCircle,
+  Database,
+  Wifi,
+  WifiOff,
+  Link,
+  Loader2,
+  Code2,
+  RotateCcw,
+  Info,
+} from 'lucide-react'
+import { useApp, DEFAULT_PROMPTS } from '../../../context/AppContext'
+import { testConnection, checkColumns } from '../../../services/dbService'
+
+const MODELS = [
+  {
+    id: 'gemini-2.5-pro',
+    label: 'Gemini 2.5 Pro',
+    desc: 'Modelo mais poderoso — melhor raciocínio e análise profunda',
+    badge: 'PRO',
+  },
+  {
+    id: 'gemini-2.5-flash',
+    label: 'Gemini 2.5 Flash',
+    desc: 'Rápido e capaz — ótimo equilíbrio custo/desempenho',
+    badge: 'NOVO',
+  },
+  {
+    id: 'gemini-2.0-flash',
+    label: 'Gemini 2.0 Flash',
+    desc: 'Estável e veloz — recomendado para uso diário intenso',
+    badge: null,
+  },
+  {
+    id: 'gemini-1.5-flash',
+    label: 'Gemini 1.5 Flash',
+    desc: 'Versão anterior — fallback confiável',
+    badge: null,
+  },
+]
+
+
+const SQL_SCRIPT = `-- 1. Criar tabela
+CREATE TABLE leads (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  name TEXT,
+  niche TEXT,
+  state TEXT,
+  transcription TEXT,
+  persona JSONB,
+  spin_questions JSONB,
+  call_notes TEXT,
+  proposal JSONB,
+  briefing JSONB
+);
+
+-- Se a tabela já existe, rode só isto:
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS proposal JSONB;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS briefing JSONB;
+
+-- 2. Trigger para atualizar updated_at
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER leads_updated_at
+BEFORE UPDATE ON leads
+FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- 3. Permitir acesso público (anon key)
+ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_access" ON leads FOR ALL USING (true);`
+
+// ─── Prompts Tab ──────────────────────────────────────────────────────────────
+
+const PROMPT_FIELDS = [
+  {
+    key: 'systemInstruction',
+    label: 'Instrução do Sistema',
+    desc: 'Persona e princípios gerais da IA — vale para Persona, SPIN e Proposta.',
+    rows: 7,
+  },
+  {
+    key: 'personaTask',
+    label: 'Tarefa — Geração de Persona',
+    desc: 'O que a IA deve analisar e como estruturar o estudo de persona.',
+    rows: 9,
+  },
+  {
+    key: 'spinTask',
+    label: 'Tarefa — Perguntas SPIN',
+    desc: 'Regras e categorias para gerar as 20 perguntas SPIN. Use {niche} como variável do nicho.',
+    rows: 11,
+    hint: 'A variável {niche} é substituída automaticamente pelo nicho do lead.',
+  },
+  {
+    key: 'proposalTask',
+    label: 'Tarefa — Proposta & Briefing',
+    desc: 'Missão da IA ao gerar a proposta comercial e o briefing para a operação.',
+    rows: 7,
+  },
+]
+
+function PromptsTab() {
+  const { customPrompts, updatePrompt, resetPrompt, resetAllPrompts } = useApp()
+  const [savedKey, setSavedKey] = useState(null)
+
+  const handleReset = (key) => {
+    resetPrompt(key)
+    setSavedKey(key)
+    setTimeout(() => setSavedKey(null), 2000)
+  }
+
+  const handleResetAll = () => {
+    resetAllPrompts()
+    setSavedKey('all')
+    setTimeout(() => setSavedKey(null), 2000)
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-start justify-between gap-4">
+        <p className="text-xs text-slate-500 leading-relaxed max-w-xl">
+          Personalize como a IA se comporta em cada etapa. Alterações são salvas automaticamente e entram em vigor na próxima geração. O formato JSON de saída é fixo para garantir que o sistema funcione corretamente.
+        </p>
+        <button
+          onClick={handleResetAll}
+          className="btn-ghost text-xs py-1.5 flex-shrink-0"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          {savedKey === 'all' ? 'Restaurado!' : 'Restaurar todos'}
+        </button>
+      </div>
+
+      {PROMPT_FIELDS.map(field => (
+        <div key={field.key} className="glass-card overflow-hidden">
+          <div className="px-5 py-4 bg-[#FFA300]/5 border-b border-[#FFA300]/15 flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-100">{field.label}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{field.desc}</p>
+              {field.hint && (
+                <p className="text-xs text-[#FFA300]/70 mt-1 flex items-center gap-1">
+                  <Info className="w-3 h-3 flex-shrink-0" /> {field.hint}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => handleReset(field.key)}
+              className="btn-ghost text-xs py-1 px-2 flex-shrink-0"
+              title="Restaurar padrão"
+            >
+              <RotateCcw className="w-3 h-3" />
+              {savedKey === field.key ? 'Restaurado!' : 'Padrão'}
+            </button>
+          </div>
+          <div className="p-4">
+            <textarea
+              value={customPrompts[field.key]}
+              onChange={e => updatePrompt(field.key, e.target.value)}
+              rows={field.rows}
+              spellCheck={false}
+              className="input-field resize-y font-mono text-xs leading-relaxed w-full"
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+export default function SettingsModule() {
+  const {
+    apiKey, setApiKey, aiModel, setAiModel,
+    supabaseUrl, supabaseKey, applyDbCredentials, dbConnected, setDbConnected,
+    dbColumnsOk, setDbColumnsOk,
+  } = useApp()
+
+  const [tab, setTab] = useState('ai')
+  const [showKey, setShowKey] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  // DB state
+  const [sbUrl, setSbUrl] = useState(supabaseUrl)
+  const [sbKey, setSbKey] = useState(supabaseKey)
+  const [showSbKey, setShowSbKey] = useState(false)
+  const [testingDb, setTestingDb] = useState(false)
+  const [dbTestResult, setDbTestResult] = useState(null) // null | 'ok' | 'error'
+  const [dbTestMsg, setDbTestMsg] = useState('')
+
+  const handleSaveDb = async () => {
+    applyDbCredentials(sbUrl.trim(), sbKey.trim())
+    setDbTestResult(null)
+  }
+
+  const handleTestDb = async () => {
+    applyDbCredentials(sbUrl.trim(), sbKey.trim())
+    setTestingDb(true)
+    setDbTestResult(null)
+    try {
+      await testConnection()
+      const colsOk = await checkColumns()
+      setDbColumnsOk(colsOk)
+      setDbConnected(true)
+      if (colsOk) {
+        setDbTestResult('ok')
+        setDbTestMsg('Conexão bem-sucedida! Tabela "leads" e todas as colunas encontradas.')
+      } else {
+        setDbTestResult('warn')
+        setDbTestMsg('Conexão OK, mas as colunas "proposal" e "briefing" não existem. Execute o ALTER TABLE abaixo para habilitar o salvamento de Proposta e Briefing.')
+      }
+    } catch (err) {
+      setDbTestResult('error')
+      setDbTestMsg(err.message || 'Erro ao conectar')
+      setDbConnected(false)
+    } finally {
+      setTestingDb(false)
+    }
+  }
+
+  const handleSave = () => {
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2500)
+  }
+
+  const TABS = [
+    { id: 'ai',      label: 'IA & Modelos',    icon: Bot },
+    { id: 'db',      label: 'Banco de Dados',   icon: Database },
+    { id: 'prompts', label: 'Prompts da IA',    icon: Code2 },
+  ]
+
+  return (
+    <div className="px-4 py-4 sm:p-6 max-w-3xl mx-auto space-y-5 animate-fade-in">
+
+      {/* Tab bar */}
+      <div className="flex gap-1 p-1 bg-surface-card border border-surface-border rounded-xl overflow-x-auto">
+        {TABS.map(t => {
+          const Icon = t.icon
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex-shrink-0 ${
+                tab === t.id
+                  ? 'bg-[#FFA300] text-black shadow-[0_0_16px_rgba(255,163,0,0.3)]'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-surface-hover'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Prompts tab */}
+      {tab === 'prompts' && <PromptsTab />}
+
+      {/* AI Config */}
+      {tab === 'ai' && <section>
+        <div className="flex items-center gap-2.5 mb-1">
+          <Bot className="w-5 h-5 text-[#FFA300]" />
+          <h2 className="section-title mb-0">Conexão com IA</h2>
+        </div>
+        <p className="section-desc">Configure sua chave da API Gemini e o modelo que será usado.</p>
+
+        <div className="glass-card p-4 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">
+              Google Gemini API Key
+            </label>
+            <div className="relative">
+              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+              <input
+                type={showKey ? 'text' : 'password'}
+                value={apiKey}
+                onChange={e => setApiKey(e.target.value)}
+                placeholder="AIza..."
+                className="input-field pl-9 pr-10"
+              />
+              <button
+                onClick={() => setShowKey(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-300"
+              >
+                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="text-xs text-slate-600 mt-1.5">
+              Obtenha sua chave em{' '}
+              <span className="text-[#FFA300]">aistudio.google.com</span>. A chave fica apenas no seu navegador.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Modelo</label>
+            <div className="grid gap-2">
+              {MODELS.map(m => (
+                <label
+                  key={m.id}
+                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                    aiModel === m.id
+                      ? 'border-[#FFA300]/50 bg-[#FFA300]/10'
+                      : 'border-surface-border hover:border-surface-border/80 hover:bg-surface-hover'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    value={m.id}
+                    checked={aiModel === m.id}
+                    onChange={() => setAiModel(m.id)}
+                    className="mt-0.5 accent-[#FFA300]"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-slate-200">{m.label}</p>
+                      {m.badge && (
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md border ${
+                          m.badge === 'PRO'
+                            ? 'bg-[#FFA300]/15 border-[#FFA300]/30 text-[#FFA300]'
+                            : 'bg-[#FFA300]/15 border-[#FFA300]/30 text-[#FFA300]'
+                        }`}>
+                          {m.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500">{m.desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-1">
+            <button onClick={handleSave} className="btn-primary">
+              {saved ? <><CheckCircle2 className="w-4 h-4" /> Salvo!</> : 'Salvar Configurações'}
+            </button>
+            {!apiKey && (
+              <div className="flex items-center gap-1.5 text-xs text-[#FFA300]">
+                <AlertCircle className="w-3.5 h-3.5" />
+                API Key necessária para usar a IA
+              </div>
+            )}
+          </div>
+        </div>
+      </section>}
+
+      {/* Database */}
+      {tab === 'db' && <section>
+        <div className="flex items-center gap-2.5 mb-1">
+          <Database className="w-5 h-5 text-[#FFA300]" />
+          <h2 className="section-title mb-0">Banco de Dados</h2>
+          <div className={`ml-auto flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full border ${
+            dbConnected
+              ? 'bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]'
+              : 'bg-surface border-surface-border text-slate-500'
+          }`}>
+            {dbConnected ? <><Wifi className="w-3 h-3" /> Conectado</> : <><WifiOff className="w-3 h-3" /> Desconectado</>}
+          </div>
+        </div>
+        <p className="section-desc">
+          Conecte ao Supabase para salvar e carregar personas e perguntas SPIN de cada lead.
+        </p>
+
+        <div className="glass-card p-4 space-y-4">
+          {/* Setup instructions */}
+          <div className="p-3 rounded-lg bg-[#FFA300]/5 border border-[#FFA300]/20 text-xs text-[#FFA300] space-y-1.5">
+            <p className="font-semibold text-[#FFA300] flex items-center gap-1.5"><Link className="w-3 h-3" /> Como configurar</p>
+            <p>1. Crie uma conta gratuita em <span className="font-mono text-[#FFA300]">supabase.com</span></p>
+            <p>2. Crie um novo projeto e vá em <strong>SQL Editor</strong></p>
+            <p>3. Execute o script SQL abaixo para criar a tabela</p>
+            <p>4. Vá em <strong>Project Settings → API</strong> para pegar a URL e a anon key</p>
+          </div>
+
+          {/* SQL Script */}
+          <div>
+            <p className="text-xs font-semibold text-slate-400 mb-1.5">Script SQL (rode no Supabase SQL Editor)</p>
+            <pre className="text-xs font-mono text-slate-400 bg-surface border border-surface-border rounded-lg p-3 overflow-x-auto leading-relaxed whitespace-pre">{SQL_SCRIPT}</pre>
+          </div>
+
+          <div className="h-px bg-surface-border" />
+
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Project URL</label>
+            <div className="relative">
+              <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+              <input
+                value={sbUrl}
+                onChange={e => setSbUrl(e.target.value)}
+                placeholder="https://xxxxxxxxxxx.supabase.co"
+                className="input-field pl-9"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Anon Key (public)</label>
+            <div className="relative">
+              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+              <input
+                type={showSbKey ? 'text' : 'password'}
+                value={sbKey}
+                onChange={e => setSbKey(e.target.value)}
+                placeholder="eyJh..."
+                className="input-field pl-9 pr-10"
+              />
+              <button
+                onClick={() => setShowSbKey(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-300"
+              >
+                {showSbKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {dbTestResult && (
+            <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs border ${
+              dbTestResult === 'ok'
+                ? 'bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]'
+                : dbTestResult === 'warn'
+                  ? 'bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]'
+                  : 'bg-white/10 border-white/20 text-slate-300'
+            }`}>
+              {dbTestResult === 'ok'
+                ? <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                : <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />}
+              {dbTestMsg}
+            </div>
+          )}
+
+          {dbConnected && dbColumnsOk === false && (
+            <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg text-xs border bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+              <span>
+                <strong>Ação necessária:</strong> as colunas <code className="bg-[#FFA300]/10 px-1 rounded">proposal</code> e <code className="bg-[#FFA300]/10 px-1 rounded">briefing</code> não existem no banco.
+                Execute o script <strong>ALTER TABLE</strong> abaixo para habilitar o salvamento de Proposta e Briefing de Clientes.
+              </span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3">
+            <button onClick={handleSaveDb} className="btn-primary">
+              <CheckCircle2 className="w-4 h-4" /> Salvar Credenciais
+            </button>
+            <button onClick={handleTestDb} disabled={testingDb || !sbUrl || !sbKey} className="btn-ghost">
+              {testingDb ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wifi className="w-3.5 h-3.5" />}
+              Testar Conexão
+            </button>
+          </div>
+        </div>
+      </section>}
+
+      {/* Migration — shown when columns are missing */}
+      {tab === 'db' && dbConnected && dbColumnsOk === false && (
+        <section>
+          <div className="flex items-center gap-2.5 mb-1">
+            <AlertCircle className="w-5 h-5 text-[#FFA300]" />
+            <h2 className="section-title mb-0 text-[#FFA300]">Migração necessária</h2>
+          </div>
+          <p className="section-desc">
+            Sua tabela existe, mas as colunas de Proposta e Briefing não foram criadas ainda.
+            Execute este script no <strong>SQL Editor</strong> do Supabase para habilitar o salvamento completo.
+          </p>
+          <div className="glass-card p-4 border-[#FFA300]/20">
+            <pre className="text-xs font-mono text-[#FFA300] bg-[#FFA300]/5 border border-[#FFA300]/15 rounded-lg p-3 overflow-x-auto leading-relaxed whitespace-pre">{`ALTER TABLE leads ADD COLUMN IF NOT EXISTS proposal JSONB;\nALTER TABLE leads ADD COLUMN IF NOT EXISTS briefing JSONB;`}</pre>
+            <p className="text-xs text-slate-500 mt-2">Após executar, clique em <strong>Testar Conexão</strong> novamente para confirmar.</p>
+          </div>
+        </section>
+      )}
+
+    </div>
+  )
+}
+
