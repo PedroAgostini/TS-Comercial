@@ -263,7 +263,29 @@ function MemberList({ title, icon: Icon, color, type, members, onAdd, onRemove }
 }
 
 function TeamTab() {
-  const { team, updateTeam } = useApp()
+  const { team, updateTeam, dbConnected } = useApp()
+  const [saving, setSaving] = useState(false)
+  const [saveResult, setSaveResult] = useState(null)
+  const [saveMsg, setSaveMsg] = useState('')
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveResult(null)
+    try {
+      await saveSetting('team', team)
+      setSaveResult('ok')
+      setSaveMsg('Equipe salva! Todos os dispositivos verão os membros ao recarregar.')
+    } catch (err) {
+      setSaveResult('error')
+      setSaveMsg(err.message?.includes('app_settings')
+        ? 'Tabela "app_settings" não existe. Execute o script SQL na aba Banco de Dados.'
+        : (err.message || 'Erro ao salvar no banco de dados.')
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
       <p className="text-xs text-slate-500 leading-relaxed">
@@ -285,6 +307,38 @@ function TeamTab() {
         onAdd={updateTeam}
         onRemove={updateTeam}
       />
+
+      {saveResult && (
+        <div className={`flex items-start gap-2 px-3 py-2.5 rounded-xl border text-xs animate-fade-in ${
+          saveResult === 'ok'
+            ? 'bg-[#FFA300]/10 border-[#FFA300]/20 text-[#FFA300]'
+            : 'bg-white/10 border-white/20 text-slate-300'
+        }`}>
+          {saveResult === 'ok'
+            ? <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            : <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          }
+          {saveMsg}
+        </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving || !dbConnected}
+          className="btn-primary"
+        >
+          {saving
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
+            : <><CheckCircle2 className="w-4 h-4" /> Salvar Equipe para Todos</>
+          }
+        </button>
+        {!dbConnected && (
+          <span className="text-xs text-slate-600 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" /> Banco não conectado
+          </span>
+        )}
+      </div>
     </div>
   )
 }
