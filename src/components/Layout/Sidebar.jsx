@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import ReactDOM from 'react-dom'
 import {
   Settings, Brain, HandshakeIcon, Target, Zap,
   ChevronRight, Database, Cloud, Building2, ClipboardList, X,
@@ -189,7 +190,10 @@ export default function Sidebar({ open, onClose }) {
         </div>
       </div>
 
-      {showLogin && <AdminLoginModal onClose={() => setShowLogin(false)} />}
+      {showLogin && ReactDOM.createPortal(
+        <AdminLoginModal onClose={() => setShowLogin(false)} />,
+        document.body
+      )}
     </aside>
   )
 }
