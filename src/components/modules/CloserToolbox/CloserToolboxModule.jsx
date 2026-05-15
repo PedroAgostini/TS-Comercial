@@ -16,41 +16,142 @@ import {
   Users,
   Lock,
   Copy,
+  Globe,
 } from 'lucide-react'
+
+// ── CPL presets by niche ──────────────────────────────────────────────────────
+const NICHE_CPL = {
+  'Clínica de Estética': 45,
+  'Clínica Médica / Saúde': 60,
+  'Advocacia / Escritório Jurídico': 120,
+  'Imobiliária / Construção': 90,
+  'Academia / Personal Trainer': 30,
+  'Restaurante / Alimentação': 25,
+  'Escola / Curso / Educação': 35,
+  'Odontologia': 55,
+  'Salão de Beleza / Barbearia': 20,
+  'Consultoria / Serviços B2B': 150,
+  'E-commerce / Loja Online': 15,
+  'Concessionária / Automóveis': 80,
+  'Contabilidade': 100,
+  'Outro / Personalizado': 0,
+}
 
 // ── ROI Calculator ────────────────────────────────────────────────────────────
 function ROICalc() {
-  const [monthly, setMonthly] = useState('')
+  const [adBudget, setAdBudget] = useState(2000)
   const [ticket, setTicket] = useState('')
   const [convRate, setConvRate] = useState('')
-  const [budget, setBudget] = useState('')
+  const [agencyFee, setAgencyFee] = useState('')
+  const [currency, setCurrency] = useState('BRL')
+  const [niche, setNiche] = useState('Clínica de Estética')
+  const [customCpl, setCustomCpl] = useState('')
 
-  const investment = parseFloat(budget) || 0
+  const isCustomNiche = niche === 'Outro / Personalizado'
+  const cpl = isCustomNiche ? (parseFloat(customCpl) || 0) : NICHE_CPL[niche]
+
   const avgTicket = parseFloat(ticket) || 0
   const rate = parseFloat(convRate) / 100 || 0
-  const adBudget = parseFloat(monthly) || 0
+  const fee = parseFloat(agencyFee) || 0
 
-  const estLeads = adBudget > 0 ? Math.round(adBudget / 25) : 0
+  const estLeads = cpl > 0 ? Math.round(adBudget / cpl) : 0
   const estSales = Math.round(estLeads * rate)
   const estRevenue = estSales * avgTicket
-  const totalInvestment = investment + adBudget
-  const roi = totalInvestment > 0 ? (((estRevenue - totalInvestment) / totalInvestment) * 100).toFixed(0) : null
+  const totalInvestment = fee + adBudget
+  const roi = totalInvestment > 0 && estRevenue > 0
+    ? (((estRevenue - totalInvestment) / totalInvestment) * 100).toFixed(0)
+    : null
   const payback = estRevenue > 0 ? (totalInvestment / estRevenue).toFixed(1) : null
+
+  const sym = currency === 'BRL' ? 'R$' : 'US$'
+  const fmt = (n) => n.toLocaleString(currency === 'BRL' ? 'pt-BR' : 'en-US')
 
   return (
     <div className="glass-card p-5">
-      <div className="flex items-center gap-2.5 mb-4">
+      <div className="flex items-center gap-2.5 mb-4 flex-wrap">
         <Calculator className="w-4 h-4 text-[#FFA300]" />
         <h3 className="text-sm font-semibold text-slate-100">Calculadora de ROI</h3>
-        <span className="text-xs text-slate-600">(projeção de retorno em tráfego pago)</span>
+        <span className="text-xs text-slate-600 hidden sm:inline">(projeção de retorno em tráfego pago)</span>
+        {/* Currency toggle */}
+        <div className="ml-auto flex items-center gap-1 p-0.5 bg-surface border border-surface-border rounded-lg">
+          {['BRL', 'USD'].map(c => (
+            <button
+              key={c}
+              onClick={() => setCurrency(c)}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                currency === c ? 'bg-[#FFA300] text-black' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Globe className="w-3 h-3" />
+              {c === 'BRL' ? 'R$' : 'US$'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-5">
+      {/* Niche picker */}
+      <div className="mb-4">
+        <label className="block text-xs font-medium text-slate-400 mb-1.5">Nicho do Lead</label>
+        <select
+          value={niche}
+          onChange={e => setNiche(e.target.value)}
+          className="input-field"
+        >
+          {Object.keys(NICHE_CPL).map(n => (
+            <option key={n} value={n}>{n}</option>
+          ))}
+        </select>
+        {!isCustomNiche && (
+          <p className="text-xs text-slate-600 mt-1">CPL estimado para esse nicho: <strong className="text-[#FFA300]">{sym} {cpl}</strong></p>
+        )}
+      </div>
+
+      {isCustomNiche && (
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-slate-400 mb-1.5">CPL Personalizado ({sym})</label>
+          <div className="relative">
+            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600" />
+            <input
+              type="number"
+              value={customCpl}
+              onChange={e => setCustomCpl(e.target.value)}
+              placeholder="Ex: 80"
+              className="input-field pl-8"
+              min="0"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Traffic budget slider */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs font-medium text-slate-400">Verba de Tráfego/mês</label>
+          <span className="text-sm font-bold text-[#FFA300]">{sym} {fmt(adBudget)}</span>
+        </div>
+        <input
+          type="range"
+          min={500}
+          max={50000}
+          step={500}
+          value={adBudget}
+          onChange={e => setAdBudget(Number(e.target.value))}
+          className="w-full h-2 rounded-full appearance-none cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, #FFA300 0%, #FFA300 ${((adBudget - 500) / (50000 - 500)) * 100}%, #2a2a2a ${((adBudget - 500) / (50000 - 500)) * 100}%, #2a2a2a 100%)`,
+          }}
+        />
+        <div className="flex justify-between text-xs text-slate-600 mt-1">
+          <span>{sym} 500</span>
+          <span>{sym} 50k</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
         {[
-          { label: 'Verba de Tráfego/mês (R$)', val: monthly, set: setMonthly, placeholder: '2000', icon: DollarSign },
-          { label: 'Ticket Médio do Cliente (R$)', val: ticket, set: setTicket, placeholder: '800', icon: Star },
-          { label: 'Taxa de Conversão Atual (%)', val: convRate, set: setConvRate, placeholder: '5', icon: TrendingUp },
-          { label: 'Fee Assessoria/mês (R$)', val: budget, set: setBudget, placeholder: '3500', icon: Users },
+          { label: `Ticket Médio do Cliente (${sym})`, val: ticket, set: setTicket, placeholder: '800', icon: Star },
+          { label: 'Taxa de Conversão (%)', val: convRate, set: setConvRate, placeholder: '5', icon: TrendingUp },
+          { label: `Mensalidade da Agência (${sym})`, val: agencyFee, set: setAgencyFee, placeholder: '3500', icon: Users },
         ].map(f => {
           const Icon = f.icon
           return (
@@ -76,22 +177,18 @@ function ROICalc() {
         <div className="border-t border-surface-border pt-4 animate-fade-in">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Projeção Mensal</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <ROIStat label="Leads Estimados" value={estLeads} suffix="" color="text-[#FFA300]" />
-            <ROIStat label="Vendas Estimadas" value={estSales} suffix="" color="text-[#FFA300]" />
-            <ROIStat label="Faturamento Est." value={`R$ ${estRevenue.toLocaleString('pt-BR')}`} color="text-[#FFA300]" />
-            <ROIStat
-              label="ROI"
-              value={`${roi}%`}
-              color="text-[#FFA300]"
-            />
+            <ROIStat label="Leads Estimados" value={estLeads} color="text-[#FFA300]" />
+            <ROIStat label="Vendas Estimadas" value={estSales} color="text-[#FFA300]" />
+            <ROIStat label="Faturamento Est." value={`${sym} ${fmt(estRevenue)}`} color="text-[#FFA300]" />
+            <ROIStat label="ROI" value={`${roi}%`} color={parseInt(roi) >= 0 ? 'text-[#FFA300]' : 'text-red-400'} />
           </div>
           {payback && (
             <p className="text-xs text-slate-500 mt-3">
-              💡 Payback estimado: <strong className="text-slate-300">{payback} meses</strong> - para cada R$ 1 investido, retorno estimado de{' '}
-              <strong className="text-[#FFA300]">R$ {roi > 0 ? (1 + parseInt(roi) / 100).toFixed(2) : '0.00'}</strong>
+              Payback estimado: <strong className="text-slate-300">{payback} meses</strong> — para cada {sym} 1 investido, retorno estimado de{' '}
+              <strong className="text-[#FFA300]">{sym} {parseInt(roi) > 0 ? (1 + parseInt(roi) / 100).toFixed(2) : '0.00'}</strong>
             </p>
           )}
-          <p className="text-xs text-slate-600 mt-2">* Estimativa baseada em CPL médio de R$25. Resultados reais variam por nicho e sazonalidade.</p>
+          <p className="text-xs text-slate-600 mt-2">* Estimativa baseada em CPL médio do nicho. Resultados reais variam por sazonalidade e qualidade das campanhas.</p>
         </div>
       )}
     </div>

@@ -15,6 +15,10 @@ import {
   RotateCcw,
   Info,
   Pencil,
+  Users,
+  UserPlus,
+  Trash2,
+  UserCheck,
 } from 'lucide-react'
 import { useApp, DEFAULT_PROMPTS } from '../../../context/AppContext'
 import { testConnection, checkColumns } from '../../../services/dbService'
@@ -56,6 +60,9 @@ CREATE TABLE leads (
   niche TEXT,
   state TEXT,
   transcription TEXT,
+  sdr TEXT,
+  closer TEXT,
+  status TEXT,
   persona JSONB,
   spin_questions JSONB,
   call_notes TEXT,
@@ -66,6 +73,9 @@ CREATE TABLE leads (
 -- Se a tabela já existe, rode só isto:
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS proposal JSONB;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS briefing JSONB;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS sdr TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS closer TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS status TEXT;
 
 -- 2. Trigger para atualizar updated_at
 CREATE OR REPLACE FUNCTION update_updated_at()
@@ -178,6 +188,87 @@ function PromptsTab() {
   )
 }
 
+// ─── Team Tab ─────────────────────────────────────────────────────────────────
+
+function MemberList({ title, icon: Icon, color, type, members, onAdd, onRemove }) {
+  const [input, setInput] = useState('')
+
+  const handleAdd = () => {
+    if (!input.trim()) return
+    onAdd(type, 'add', input.trim())
+    setInput('')
+  }
+
+  return (
+    <div className="glass-card overflow-hidden">
+      <div className={`flex items-center gap-2 px-5 py-3.5 bg-[#FFA300]/5 border-b border-[#FFA300]/15`}>
+        <Icon className="w-4 h-4 text-[#FFA300]" />
+        <p className="text-sm font-semibold text-slate-100">{title}</p>
+        <span className="ml-auto text-xs text-slate-500">{members.length} cadastrado{members.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div className="p-4 space-y-3">
+        <div className="flex gap-2">
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleAdd()}
+            placeholder={`Nome do ${title.toLowerCase().slice(0, -1)}...`}
+            className="input-field flex-1"
+          />
+          <button onClick={handleAdd} className="btn-primary px-4 py-2 flex-shrink-0">
+            <UserPlus className="w-4 h-4" />
+          </button>
+        </div>
+        {members.length === 0 ? (
+          <p className="text-xs text-slate-600 text-center py-3 italic">Nenhum cadastrado ainda</p>
+        ) : (
+          <div className="space-y-1.5">
+            {members.map(name => (
+              <div key={name} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface border border-surface-border">
+                <UserCheck className="w-3.5 h-3.5 text-[#FFA300] flex-shrink-0" />
+                <span className="text-sm text-slate-200 flex-1">{name}</span>
+                <button
+                  onClick={() => onRemove(type, 'remove', name)}
+                  className="p-1 rounded text-slate-600 hover:text-slate-300 hover:bg-white/10 transition-all"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function TeamTab() {
+  const { team, updateTeam } = useApp()
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-slate-500 leading-relaxed">
+        Cadastre os SDRs e Closers da equipe. Eles aparecerão como opções de seleção em cada lead.
+      </p>
+      <MemberList
+        title="SDRs"
+        icon={Users}
+        type="sdrs"
+        members={team.sdrs}
+        onAdd={updateTeam}
+        onRemove={updateTeam}
+      />
+      <MemberList
+        title="Closers"
+        icon={UserCheck}
+        type="closers"
+        members={team.closers}
+        onAdd={updateTeam}
+        onRemove={updateTeam}
+      />
+    </div>
+  )
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function SettingsModule() {
@@ -241,6 +332,7 @@ export default function SettingsModule() {
         { id: 'ai',      label: 'IA & Modelos',  icon: Bot },
         { id: 'db',      label: 'Banco de Dados', icon: Database },
         { id: 'prompts', label: 'Prompts da IA',  icon: Code2 },
+        { id: 'team',    label: 'Equipe',          icon: Users },
       ]
     : [
         { id: 'ai', label: 'IA & Modelos', icon: Bot },
@@ -272,6 +364,9 @@ export default function SettingsModule() {
 
       {/* Prompts tab */}
       {tab === 'prompts' && <PromptsTab />}
+
+      {/* Team tab */}
+      {tab === 'team' && <TeamTab />}
 
       {/* AI Config */}
       {tab === 'ai' && <section>

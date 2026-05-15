@@ -1,10 +1,12 @@
-﻿import React, { useState, useEffect, useCallback } from 'react'
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import ReactDOM from 'react-dom'
 import {
   Database, RefreshCw, Trash2, FolderOpen, User, Building2, MapPin,
   Calendar, CheckCircle2, Circle, AlertCircle, WifiOff, Loader2, Search,
   Brain, MessageSquare, HandshakeIcon, ClipboardList,
   ChevronDown, ChevronUp, Heart, Target, Sparkles, X, Eye,
+  LayoutList, LayoutGrid, Filter, Users, UserCheck, Clock, XCircle,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { useApp } from '../../../context/AppContext'
 import { fetchLeads, deleteLead } from '../../../services/dbService'
@@ -45,6 +47,24 @@ function StatusDot({ active, label }) {
     <span className={`flex items-center gap-1 text-xs ${active ? 'text-[#FFA300]' : 'text-slate-600'}`}>
       {active ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
       {label}
+    </span>
+  )
+}
+
+const DEAL_STATUS_CONFIG = {
+  fechado:     { label: 'Fechado',       icon: CheckCircle2, cls: 'bg-green-500/10 border-green-500/20 text-green-400' },
+  aguardando:  { label: 'Aguardando',    icon: Clock,        cls: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' },
+  nao_fechado: { label: 'Não fechado',   icon: XCircle,      cls: 'bg-red-500/10 border-red-500/20 text-red-400' },
+}
+
+function DealStatusBadge({ status }) {
+  if (!status) return null
+  const cfg = DEAL_STATUS_CONFIG[status]
+  if (!cfg) return null
+  const Icon = cfg.icon
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium ${cfg.cls}`}>
+      <Icon className="w-3 h-3" />{cfg.label}
     </span>
   )
 }
@@ -409,7 +429,7 @@ function LeadFolder({ lead }) {
   )
 }
 
-function LeadCard({ lead, onLoad, onDelete, onView }) {
+function LeadCard({ lead, onLoad, onDelete, onView, compact }) {
   const [expanded, setExpanded] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -427,6 +447,58 @@ function LeadCard({ lead, onLoad, onDelete, onView }) {
     finally { setDeleting(false); setConfirmDelete(false) }
   }
 
+  if (compact) {
+    return (
+      <div className="glass-card overflow-hidden hover:border-[#FFA300]/30 transition-all duration-200 flex flex-col">
+        <div className="p-4 flex-1">
+          <div className="flex items-start gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-[#FFA300]/10 border border-[#FFA300]/20 flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 text-[#FFA300]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-slate-100 truncate">{lead.name || lead.niche || 'Lead sem nome'}</p>
+              {lead.niche && <p className="text-xs text-slate-500 truncate">{lead.niche}</p>}
+            </div>
+          </div>
+          <div className="space-y-1 mb-3">
+            {lead.state && <p className="text-xs text-slate-500 flex items-center gap-1"><MapPin className="w-3 h-3 flex-shrink-0" />{lead.state}</p>}
+            {lead.sdr && <p className="text-xs text-slate-500 flex items-center gap-1"><Users className="w-3 h-3 flex-shrink-0 text-[#FFA300]" />SDR: {lead.sdr}</p>}
+            {lead.closer && <p className="text-xs text-slate-500 flex items-center gap-1"><UserCheck className="w-3 h-3 flex-shrink-0 text-[#FFA300]" />Closer: {lead.closer}</p>}
+          </div>
+          <div className="flex flex-wrap gap-1 mb-2">
+            <DealStatusBadge status={lead.status} />
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            <StatusDot active={hasPersona}  label="Persona" />
+            <StatusDot active={hasSpin}     label={hasSpin ? `SPIN(${answered})` : 'SPIN'} />
+            <StatusDot active={hasProposal} label="Proposta" />
+            <StatusDot active={hasBriefing} label="Briefing" />
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 px-3 py-2.5 border-t border-surface-border bg-surface/20">
+          <button onClick={() => onView(lead)} className="btn-ghost text-xs py-1 px-2 flex items-center gap-1">
+            <Eye className="w-3 h-3" /> Ver
+          </button>
+          <button onClick={() => onLoad(lead)} className="btn-primary text-xs py-1 flex-1 justify-center">
+            <FolderOpen className="w-3 h-3" /> Carregar
+          </button>
+          {confirmDelete ? (
+            <>
+              <button onClick={handleDelete} disabled={deleting} className="px-2 py-1 rounded text-xs bg-white/20 text-slate-300 hover:bg-white/30">
+                {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Sim'}
+              </button>
+              <button onClick={() => setConfirmDelete(false)} className="text-slate-500 text-xs px-1">Não</button>
+            </>
+          ) : (
+            <button onClick={() => setConfirmDelete(true)} className="p-1.5 rounded text-slate-600 hover:text-slate-300 hover:bg-white/10">
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="glass-card overflow-hidden hover:border-[#FFA300]/30 transition-all duration-200">
 
@@ -439,15 +511,20 @@ function LeadCard({ lead, onLoad, onDelete, onView }) {
           <User className="w-5 h-5 text-[#FFA300]" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start justify-between gap-2 flex-wrap">
             <p className="text-sm font-semibold text-slate-100 truncate">{lead.name || lead.niche || 'Lead sem nome'}</p>
-            <span className="flex items-center gap-1 text-xs text-slate-600 flex-shrink-0">
-              <Calendar className="w-3 h-3" />{formatDate(lead.updated_at)}
-            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <DealStatusBadge status={lead.status} />
+              <span className="flex items-center gap-1 text-xs text-slate-600">
+                <Calendar className="w-3 h-3" />{formatDate(lead.updated_at)}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-3 mt-0.5">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
             {lead.niche && <span className="flex items-center gap-1 text-xs text-slate-500"><Building2 className="w-3 h-3" />{lead.niche}</span>}
             {lead.state && <span className="flex items-center gap-1 text-xs text-slate-500"><MapPin className="w-3 h-3" />{lead.state}</span>}
+            {lead.sdr && <span className="flex items-center gap-1 text-xs text-slate-500"><Users className="w-3 h-3 text-[#FFA300]" />{lead.sdr}</span>}
+            {lead.closer && <span className="flex items-center gap-1 text-xs text-slate-500"><UserCheck className="w-3 h-3 text-[#FFA300]" />{lead.closer}</span>}
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
             <StatusDot active={hasPersona}  label="Persona" />
@@ -492,13 +569,20 @@ function LeadCard({ lead, onLoad, onDelete, onView }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function HistoricoModule() {
-  const { dbConnected, loadLeadFromDb, setActiveModule } = useApp()
+  const { dbConnected, loadLeadFromDb, setActiveModule, team } = useApp()
 
   const [leads, setLeads] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [viewingLead, setViewingLead] = useState(null)
+  const [viewMode, setViewMode] = useState('list') // 'list' | 'grid'
+  const [showFilters, setShowFilters] = useState(false)
+  const [filterSdr, setFilterSdr] = useState('')
+  const [filterCloser, setFilterCloser] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
+  const [filterDateFrom, setFilterDateFrom] = useState('')
+  const [filterDateTo, setFilterDateTo] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -513,10 +597,40 @@ export default function HistoricoModule() {
   const handleLoad = (row) => { loadLeadFromDb(row); setActiveModule('intelligence') }
   const handleDelete = (id) => setLeads(prev => prev.filter(l => l.id !== id))
 
-  const filtered = leads.filter(l => {
+  const activeFilters = [filterSdr, filterCloser, filterStatus, filterDateFrom, filterDateTo].filter(Boolean).length
+
+  const filtered = useMemo(() => leads.filter(l => {
     const q = search.toLowerCase()
-    return !q || l.name?.toLowerCase().includes(q) || l.niche?.toLowerCase().includes(q) || l.state?.toLowerCase().includes(q)
-  })
+    if (q && !l.name?.toLowerCase().includes(q) && !l.niche?.toLowerCase().includes(q) && !l.state?.toLowerCase().includes(q)) return false
+    if (filterSdr && l.sdr !== filterSdr) return false
+    if (filterCloser && l.closer !== filterCloser) return false
+    if (filterStatus && l.status !== filterStatus) return false
+    if (filterDateFrom) {
+      const from = new Date(filterDateFrom)
+      if (new Date(l.updated_at) < from) return false
+    }
+    if (filterDateTo) {
+      const to = new Date(filterDateTo)
+      to.setHours(23, 59, 59, 999)
+      if (new Date(l.updated_at) > to) return false
+    }
+    return true
+  }), [leads, search, filterSdr, filterCloser, filterStatus, filterDateFrom, filterDateTo])
+
+  const clearFilters = () => {
+    setFilterSdr(''); setFilterCloser(''); setFilterStatus('')
+    setFilterDateFrom(''); setFilterDateTo('')
+  }
+
+  // Collect unique SDRs/Closers from data (merge with team list)
+  const allSdrs = useMemo(() => {
+    const s = new Set([...team.sdrs, ...leads.map(l => l.sdr).filter(Boolean)])
+    return [...s].sort()
+  }, [team.sdrs, leads])
+  const allClosers = useMemo(() => {
+    const s = new Set([...team.closers, ...leads.map(l => l.closer).filter(Boolean)])
+    return [...s].sort()
+  }, [team.closers, leads])
 
   if (!dbConnected) {
     return (
@@ -542,25 +656,102 @@ export default function HistoricoModule() {
         document.body
       )}
 
-      <div className="px-4 py-4 sm:p-6 max-w-3xl mx-auto space-y-4 sm:space-y-5 animate-fade-in">
+      <div className="px-4 py-4 sm:p-6 max-w-4xl mx-auto space-y-4 sm:space-y-5 animate-fade-in">
 
-        <div className="flex items-center justify-between">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <div>
             <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
               <Database className="w-4 h-4 text-[#FFA300]" /> Histórico de Leads
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">{leads.length} lead{leads.length !== 1 ? 's' : ''} salvos</p>
+            <p className="text-xs text-slate-500 mt-0.5">{filtered.length} de {leads.length} lead{leads.length !== 1 ? 's' : ''}</p>
           </div>
-          <button onClick={load} disabled={loading} className="btn-ghost text-xs py-2">
-            {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-            Atualizar
-          </button>
+          <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex items-center gap-0.5 p-0.5 bg-surface border border-surface-border rounded-lg">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded transition-all ${viewMode === 'list' ? 'bg-[#FFA300] text-black' : 'text-slate-400 hover:text-slate-200'}`}
+                title="Lista"
+              >
+                <LayoutList className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded transition-all ${viewMode === 'grid' ? 'bg-[#FFA300] text-black' : 'text-slate-400 hover:text-slate-200'}`}
+                title="Cards"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <button
+              onClick={() => setShowFilters(v => !v)}
+              className={`btn-ghost text-xs py-2 relative ${showFilters ? 'border-[#FFA300]/50 text-[#FFA300]' : ''}`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              Filtros
+              {activeFilters > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#FFA300] text-black text-[10px] font-bold flex items-center justify-center">
+                  {activeFilters}
+                </span>
+              )}
+            </button>
+            <button onClick={load} disabled={loading} className="btn-ghost text-xs py-2">
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">Atualizar</span>
+            </button>
+          </div>
         </div>
 
+        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nome, nicho ou localização..." className="input-field pl-9" />
         </div>
+
+        {/* Filters panel */}
+        {showFilters && (
+          <div className="glass-card p-4 space-y-3 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1 flex items-center gap-1"><Users className="w-3 h-3" /> SDR</label>
+                <select value={filterSdr} onChange={e => setFilterSdr(e.target.value)} className="input-field text-xs">
+                  <option value="">Todos os SDRs</option>
+                  {allSdrs.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1 flex items-center gap-1"><UserCheck className="w-3 h-3" /> Closer</label>
+                <select value={filterCloser} onChange={e => setFilterCloser(e.target.value)} className="input-field text-xs">
+                  <option value="">Todos os Closers</option>
+                  {allClosers.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Situação</label>
+                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="input-field text-xs">
+                  <option value="">Todas as situações</option>
+                  <option value="fechado">Fechado</option>
+                  <option value="aguardando">Aguardando</option>
+                  <option value="nao_fechado">Não fechado</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> De</label>
+                <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} className="input-field text-xs" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Até</label>
+                <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} className="input-field text-xs" />
+              </div>
+            </div>
+            {activeFilters > 0 && (
+              <button onClick={clearFilters} className="btn-ghost text-xs py-1.5 text-slate-400">
+                <X className="w-3.5 h-3.5" /> Limpar filtros
+              </button>
+            )}
+          </div>
+        )}
 
         {error && (
           <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/10 border border-white/20 text-slate-300 text-sm">
@@ -580,8 +771,24 @@ export default function HistoricoModule() {
             <div className="glass-card p-12 flex flex-col items-center text-center">
               <Database className="w-8 h-8 text-slate-700 mb-3" />
               <p className="text-sm font-medium text-slate-400">
-                {search ? 'Nenhum lead encontrado' : 'Nenhum lead salvo ainda'}
+                {search || activeFilters > 0 ? 'Nenhum lead encontrado com os filtros atuais' : 'Nenhum lead salvo ainda'}
               </p>
+              {activeFilters > 0 && (
+                <button onClick={clearFilters} className="btn-ghost text-xs mt-3">Limpar filtros</button>
+              )}
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filtered.map(lead => (
+                <LeadCard
+                  key={lead.id}
+                  lead={lead}
+                  onLoad={handleLoad}
+                  onDelete={handleDelete}
+                  onView={setViewingLead}
+                  compact
+                />
+              ))}
             </div>
           ) : (
             <div className="space-y-3">

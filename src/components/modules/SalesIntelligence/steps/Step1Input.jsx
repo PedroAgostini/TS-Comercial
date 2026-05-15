@@ -11,11 +11,22 @@ import {
   MessageSquare,
   ClipboardPaste,
   Loader2,
+  Users,
+  UserCheck,
+  CheckCircle2,
+  Clock,
+  XCircle,
 } from 'lucide-react'
 import { useApp } from '../../../../context/AppContext'
 import { generatePersona } from '../../../../services/geminiService'
 import Spinner from '../../../ui/Spinner'
 
+const DEAL_STATUSES = [
+  { value: '', label: 'Selecione...', icon: null },
+  { value: 'fechado', label: 'Fechado', icon: CheckCircle2, color: 'text-green-400' },
+  { value: 'aguardando', label: 'Aguardando', icon: Clock, color: 'text-yellow-400' },
+  { value: 'nao_fechado', label: 'Não fechado', icon: XCircle, color: 'text-red-400' },
+]
 
 export default function Step1Input() {
   const {
@@ -26,6 +37,7 @@ export default function Step1Input() {
     setPersona,
     loadingPersona, setLoadingPersona,
     setIntelligenceStep,
+    team,
   } = useApp()
 
   const [error, setError] = useState('')
@@ -128,6 +140,49 @@ export default function Step1Input() {
               placeholder="Ex: São Paulo, SP"
               className="input-field"
             />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">
+              <span className="flex items-center gap-1"><Users className="w-3 h-3" /> SDR</span>
+            </label>
+            <select
+              value={leadData.sdr}
+              onChange={e => updateLeadData('sdr', e.target.value)}
+              className="input-field"
+            >
+              <option value="">Selecione o SDR...</option>
+              {team.sdrs.map(name => <option key={name} value={name}>{name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">
+              <span className="flex items-center gap-1"><UserCheck className="w-3 h-3" /> Closer</span>
+            </label>
+            <select
+              value={leadData.closer}
+              onChange={e => updateLeadData('closer', e.target.value)}
+              className="input-field"
+            >
+              <option value="">Selecione o Closer...</option>
+              {team.closers.map(name => <option key={name} value={name}>{name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">
+              <span className="flex items-center gap-1">Situação do Lead</span>
+            </label>
+            <select
+              value={leadData.status}
+              onChange={e => updateLeadData('status', e.target.value)}
+              className="input-field"
+            >
+              {DEAL_STATUSES.map(s => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
           </div>
         </div>
       </section>

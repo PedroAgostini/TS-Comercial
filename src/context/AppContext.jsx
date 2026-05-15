@@ -141,8 +141,33 @@ export function AppProvider({ children }) {
     setCompanyContext(prev => ({ ...prev, [field]: value }))
   }, [])
 
+  // ── Team (SDRs / Closers) ─────────────────────────────────────
+  const [team, setTeam] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ts_team')
+      return saved ? JSON.parse(saved) : { sdrs: [], closers: [] }
+    } catch { return { sdrs: [], closers: [] } }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('ts_team', JSON.stringify(team))
+  }, [team])
+
+  const updateTeam = useCallback((type, action, name) => {
+    setTeam(prev => {
+      const list = prev[type] || []
+      if (action === 'add' && name?.trim() && !list.includes(name.trim())) {
+        return { ...prev, [type]: [...list, name.trim()] }
+      }
+      if (action === 'remove') {
+        return { ...prev, [type]: list.filter(n => n !== name) }
+      }
+      return prev
+    })
+  }, [])
+
   // ── Lead / Client Data ────────────────────────────────────────
-  const [leadData, setLeadData] = useState({ name: '', niche: '', state: '', transcription: '' })
+  const [leadData, setLeadData] = useState({ name: '', niche: '', state: '', transcription: '', sdr: '', closer: '', status: '' })
 
   const updateLeadData = useCallback((field, value) => {
     setLeadData(prev => ({ ...prev, [field]: value }))
@@ -213,6 +238,9 @@ export function AppProvider({ children }) {
         niche: leadData.niche,
         state: leadData.state,
         transcription: leadData.transcription,
+        sdr: leadData.sdr,
+        closer: leadData.closer,
+        status: leadData.status,
         persona,
         spinQuestions,
         callNotes,
@@ -240,6 +268,9 @@ export function AppProvider({ children }) {
       niche: row.niche || '',
       state: row.state || '',
       transcription: row.transcription || '',
+      sdr: row.sdr || '',
+      closer: row.closer || '',
+      status: row.status || '',
     })
     if (row.persona) setPersona(row.persona)
     if (row.spin_questions) setSpinQuestions(row.spin_questions)
@@ -257,7 +288,7 @@ export function AppProvider({ children }) {
 
   // ── Reset wizard ──────────────────────────────────────────────
   const resetIntelligence = useCallback(() => {
-    setLeadData({ name: '', niche: '', state: '', transcription: '' })
+    setLeadData({ name: '', niche: '', state: '', transcription: '', sdr: '', closer: '', status: '' })
     setPersona(null)
     setSpinQuestions([])
     setCallNotes('')
@@ -312,6 +343,7 @@ export function AppProvider({ children }) {
     resetIntelligence,
     activeModule, setActiveModule,
     isAdmin, adminLogin, adminLogout,
+    team, updateTeam,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

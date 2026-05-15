@@ -64,13 +64,14 @@ export default function Sidebar({ open, onClose }) {
   return (
     <aside className={`
       fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
-      w-64 flex-shrink-0 flex flex-col h-screen
+      w-64 flex-shrink-0 flex flex-col
       border-r border-white/5
       transition-transform duration-300 ease-out
       ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
     `}
     style={{
       background: 'linear-gradient(180deg, #0a0a0a 0%, #080808 100%)',
+      height: '100dvh',
     }}>
 
       {/* Logo */}
@@ -149,7 +150,7 @@ export default function Sidebar({ open, onClose }) {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-white/5 flex-shrink-0">
+      <div className="px-4 py-4 border-t border-white/5 flex-shrink-0 safe-bottom">
         <DbBadge />
         <p className="text-xs text-slate-500 mt-2">Developed by <span className="text-[#FFA300] font-semibold">Pedro Agostini</span></p>
         <p className="text-xs text-slate-700 font-medium mt-1">EuSouTS © {new Date().getFullYear()}</p>

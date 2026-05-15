@@ -37,7 +37,7 @@ export default function App() {
 
   return (
     <AppProvider>
-      <div className="flex h-screen bg-[#080808] overflow-hidden">
+      <div className="flex bg-[#080808] overflow-hidden" style={{ height: '100dvh' }}>
 
         {/* Mobile overlay */}
         {sidebarOpen && (

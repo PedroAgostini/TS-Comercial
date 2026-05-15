@@ -39,6 +39,9 @@ export async function saveLead(id, payload) {
     niche: payload.niche || null,
     state: payload.state || null,
     transcription: payload.transcription || null,
+    sdr: payload.sdr || null,
+    closer: payload.closer || null,
+    status: payload.status || null,
     persona: payload.persona || null,
     spin_questions: payload.spinQuestions || null,
     call_notes: payload.callNotes || null,
@@ -77,7 +80,7 @@ export async function fetchLeads() {
 
   const { data, error } = await _client
     .from('leads')
-    .select('id, name, niche, state, created_at, updated_at, persona, spin_questions, call_notes, proposal, briefing')
+    .select('id, name, niche, state, sdr, closer, status, created_at, updated_at, persona, spin_questions, call_notes, proposal, briefing')
     .order('updated_at', { ascending: false })
 
   if (error) {
