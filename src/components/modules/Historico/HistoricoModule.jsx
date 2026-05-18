@@ -457,7 +457,7 @@ function LeadCard({ lead, onLoad, onDelete, onView, compact }) {
   const hasBriefing = !!lead.briefing
   const answered    = hasSpin ? lead.spin_questions.filter(q => q.answer?.trim()).length : 0
 
-  const navVisible = (navId) => isAdmin || (navConfig.find(n => n.id === navId)?.visible !== false)
+  const navVisible = (navId) => navConfig.find(n => n.id === navId)?.visible !== false
   const showIntelligence = navVisible('intelligence')
   const showClosing      = navVisible('closing')
   const showBriefing     = navVisible('briefing')

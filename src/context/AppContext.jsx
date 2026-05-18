@@ -82,8 +82,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (skipPromptsSave.current > 0) { skipPromptsSave.current--; return }
     localStorage.setItem('ts_prompts', JSON.stringify(customPrompts))
-    clearTimeout(promptsDbTimer.current)
-    promptsDbTimer.current = setTimeout(() => saveSetting('custom_prompts', customPrompts).catch(console.warn), 800)
+    if (dbInitialized.current) {
+      clearTimeout(promptsDbTimer.current)
+      promptsDbTimer.current = setTimeout(() => saveSetting('custom_prompts', customPrompts).catch(console.warn), 800)
+    }
   }, [customPrompts])
 
   const updatePrompt = useCallback((key, value) => {
@@ -133,11 +135,13 @@ export function AppProvider({ children }) {
   const companyDbTimer = useRef(null)
   const promptsDbTimer = useRef(null)
   // Prevents re-saving to DB when we're loading values FROM DB
-  const skipNavSave    = useRef(0)
   const skipTeamSave   = useRef(0)
   const skipCompanySave  = useRef(0)
   const skipPromptsSave  = useRef(0)
   const dbSyncDone = useRef(false)
+  // Only allow DB saves AFTER the initial DB load is complete — prevents
+  // overwriting the real DB data with stale/empty localStorage on fresh devices
+  const dbInitialized = useRef(false)
 
   const loadGlobalSettings = useCallback(async () => {
     try {
@@ -148,7 +152,6 @@ export function AppProvider({ children }) {
         loadSetting('custom_prompts'),
       ])
       if (navCfg) {
-        skipNavSave.current++
         setNavConfig(prev => {
           const ids = navCfg.map(i => i.id)
           const missing = prev.filter(d => !ids.includes(d.id))
@@ -169,6 +172,8 @@ export function AppProvider({ children }) {
       }
     } catch (err) {
       console.warn('Failed to load global settings from DB:', err)
+    } finally {
+      dbInitialized.current = true
     }
   }, [])
 
@@ -190,8 +195,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (skipCompanySave.current > 0) { skipCompanySave.current--; return }
     localStorage.setItem('ts_company', JSON.stringify(companyContext))
-    clearTimeout(companyDbTimer.current)
-    companyDbTimer.current = setTimeout(() => saveSetting('company_context', companyContext).catch(console.warn), 800)
+    if (dbInitialized.current) {
+      clearTimeout(companyDbTimer.current)
+      companyDbTimer.current = setTimeout(() => saveSetting('company_context', companyContext).catch(console.warn), 800)
+    }
   }, [companyContext])
 
   const updateCompanyContext = useCallback((field, value) => {
@@ -223,7 +230,6 @@ export function AppProvider({ children }) {
 
   // navConfig: localStorage only — DB save is explicit via "Salvar" button in Settings
   useEffect(() => {
-    if (skipNavSave.current > 0) { skipNavSave.current--; return }
     localStorage.setItem('ts_nav_config', JSON.stringify(navConfig))
   }, [navConfig])
 
@@ -254,7 +260,9 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (skipTeamSave.current > 0) { skipTeamSave.current--; return }
     localStorage.setItem('ts_team', JSON.stringify(team))
-    saveSetting('team', team).catch(console.warn)
+    if (dbInitialized.current) {
+      saveSetting('team', team).catch(console.warn)
+    }
   }, [team])
 
   const updateTeam = useCallback((type, action, name) => {
